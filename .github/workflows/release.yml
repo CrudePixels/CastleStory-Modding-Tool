@@ -1,0 +1,87 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Restore dependencies
+      run: |
+        dotnet restore EasyLauncher/EasyLauncher.csproj
+        dotnet restore Components/CastleStoryLauncher/CastleStoryLauncher.csproj
+        dotnet restore Components/LANServer/LANServer.csproj
+        dotnet restore Components/LANClient/LANClient.csproj
+    
+    - name: Build Easy Launcher
+      run: |
+        cd EasyLauncher
+        dotnet build -c Release -r win-x64 --self-contained false
+    
+    - name: Build Castle Story Launcher
+      run: |
+        cd Components/CastleStoryLauncher
+        dotnet build -c Release -r win-x64 --self-contained false
+    
+    - name: Build LAN Server
+      run: |
+        cd Components/LANServer
+        dotnet build -c Release -r win-x64 --self-contained false
+    
+    - name: Build LAN Client
+      run: |
+        cd Components/LANClient
+        dotnet build -c Release -r win-x64 --self-contained false
+    
+    - name: Create Release Package
+      run: |
+        mkdir Release
+        mkdir Release\Components\CastleStoryLauncher
+        mkdir Release\Components\LANServer
+        mkdir Release\Components\LANClient
+        mkdir Release\logs
+        
+        copy EasyLauncher\bin\Release\net9.0-windows\win-x64\EasyLauncher.exe Release\
+        copy EasyLauncher\bin\Release\net9.0-windows\win-x64\EasyLauncher.dll Release\
+        
+        copy Components\CastleStoryLauncher\bin\Release\net9.0-windows\CastleStoryLauncher.exe Release\Components\CastleStoryLauncher\
+        copy Components\CastleStoryLauncher\bin\Release\net9.0-windows\CastleStoryLauncher.dll Release\Components\CastleStoryLauncher\
+        
+        copy Components\LANServer\bin\Release\net9.0-windows\LANServer.exe Release\Components\LANServer\
+        copy Components\LANServer\bin\Release\net9.0-windows\LANServer.dll Release\Components\LANServer\
+        
+        copy Components\LANClient\bin\Release\net9.0-windows\LANClient.exe Release\Components\LANClient\
+        copy Components\LANClient\bin\Release\net9.0-windows\LANClient.dll Release\Components\LANClient\
+        
+        copy version.txt Release\
+        copy README.md Release\
+    
+    - name: Create ZIP Archive
+      run: |
+        powershell Compress-Archive -Path Release\* -DestinationPath CastleStoryModdingTool.zip
+    
+    - name: Upload Release
+      uses: actions/upload-artifact@v4
+      with:
+        name: CastleStoryModdingTool
+        path: CastleStoryModdingTool.zip
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: CastleStoryModdingTool.zip
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,45 @@
+{
+  "name": "Enhanced Multiplayer Mod",
+  "version": "1.0.0",
+  "author": "Castle Story Modding Team",
+  "description": "Removes 4-player limit and adds map/gamemode synchronization for enhanced multiplayer experience",
+  "settings": {
+    "keyValues": [
+      {
+        "key": "maxPlayers",
+        "value": "32",
+        "description": "Maximum number of players allowed in a game (default: 32)"
+      },
+      {
+        "key": "maxTeams",
+        "value": "16",
+        "description": "Maximum number of teams allowed (default: 16)"
+      },
+      {
+        "key": "defaultPort",
+        "value": "7777",
+        "description": "Default port for multiplayer hosting"
+      },
+      {
+        "key": "enableMapSync",
+        "value": "true",
+        "description": "Enable automatic map synchronization between host and clients"
+      },
+      {
+        "key": "enableGamemodeSync",
+        "value": "true",
+        "description": "Enable automatic gamemode synchronization"
+      }
+    ]
+  },
+  "features": [
+    "Remove 4-player limit",
+    "Increase team limit to 16",
+    "Automatic map synchronization",
+    "Gamemode synchronization",
+    "Real-time player sync",
+    "File integrity verification",
+    "Custom lobby system",
+    "Host migration support"
+  ]
+}

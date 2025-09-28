@@ -1,0 +1,270 @@
+<Window x:Class="CastleStoryLauncher.LuaEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Editor" Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF2D2D30">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#FFE67C22" Padding="15">
+            <StackPanel>
+                <TextBlock Text="📝 Castle Story Editor" 
+                          FontSize="24" FontWeight="Bold" 
+                          Foreground="White" HorizontalAlignment="Center"/>
+                <TextBlock Text="Edit game variables, language settings, and mod configurations" 
+                          FontSize="12" 
+                          Foreground="White" HorizontalAlignment="Center" 
+                          Margin="0,5,0,0"/>
+                
+                <!-- Mode Selection -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <RadioButton x:Name="EasyModeRadio" Content="🎯 Easy Mode" 
+                                Foreground="White" FontWeight="Bold" 
+                                Margin="0,0,20,0" IsChecked="True" 
+                                Checked="ModeRadio_Checked"/>
+                    <RadioButton x:Name="AdvancedModeRadio" Content="⚙️ Advanced Mode" 
+                                Foreground="White" FontWeight="Bold" 
+                                Checked="ModeRadio_Checked"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- File Browser -->
+            <GroupBox Grid.Column="0" Header="Lua Files" Foreground="White" FontWeight="Bold">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Game Directory -->
+                    <StackPanel Grid.Row="0" Margin="5">
+                        <TextBlock Text="Game Directory:" Foreground="White" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="GameDirectoryTextBox" 
+                                Background="#FF3C3C3C" Foreground="White" 
+                                BorderBrush="#FF555555" Padding="5" Margin="0,0,0,5"/>
+                        <Button x:Name="BrowseGameButton" Content="Browse..." 
+                               Click="BrowseGame_Click" Background="#FFE67C22" 
+                               Foreground="White" BorderBrush="#FFE67C22" 
+                               Padding="10,5"/>
+                    </StackPanel>
+                    
+                    <!-- File List -->
+                    <ListBox x:Name="FileListBox" Grid.Row="1" 
+                            Background="#FF3C3C3C" BorderBrush="#FF555555"
+                            Foreground="White" SelectionChanged="FileListBox_SelectionChanged"
+                            Margin="5">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="FileIcon" Text="📄" Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <!-- File Actions -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="5">
+                        <Button x:Name="RefreshFilesButton" Content="🔄 Refresh" 
+                               Click="RefreshFiles_Click" Background="#FF6C757D" 
+                               Foreground="White" BorderBrush="#FF6C757D" 
+                               Padding="8,3" Margin="0,0,5,0"/>
+                        <Button x:Name="NewFileButton" Content="➕ New" 
+                               Click="NewFile_Click" Background="#FF28A745" 
+                               Foreground="White" BorderBrush="#FF28A745" 
+                               Padding="8,3"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+            
+            <!-- Divider -->
+            <GridSplitter Grid.Column="1" Background="#FF555555" 
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            
+            <!-- Editor -->
+            <GroupBox Grid.Column="2" Header="Editor" Foreground="White" FontWeight="Bold">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- File Info -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+                        <TextBlock x:Name="CurrentFileLabel" Text="No file selected" 
+                                  Foreground="White" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="FileStatusLabel" Text="Ready" 
+                                  Foreground="LightGreen" FontSize="10"/>
+                    </StackPanel>
+                    
+                    <!-- Easy Mode Content -->
+                    <ScrollViewer x:Name="EasyModePanel" Grid.Row="1" 
+                                 VerticalScrollBarVisibility="Auto" Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="🎯 Easy Mode - Quick Game Modifications" 
+                                      FontSize="16" FontWeight="Bold" 
+                                      Foreground="White" Margin="0,0,0,15"/>
+                            
+                            <!-- Player Settings -->
+                            <GroupBox Header="Player Settings" Foreground="White" FontWeight="Bold" Margin="0,0,0,10">
+                                <StackPanel Margin="10">
+                                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                                        <TextBlock Text="Max Players:" Width="120" Foreground="White" VerticalAlignment="Center"/>
+                                        <TextBox x:Name="MaxPlayersTextBox" Width="100" Margin="5,0"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                                        <TextBlock Text="Max Teams:" Width="120" Foreground="White" VerticalAlignment="Center"/>
+                                        <TextBox x:Name="MaxTeamsTextBox" Width="100" Margin="5,0"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                                        <TextBlock Text="Player Name:" Width="120" Foreground="White" VerticalAlignment="Center"/>
+                                        <TextBox x:Name="PlayerNameTextBox" Width="200" Margin="5,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </GroupBox>
+                            
+                            <!-- Game Settings -->
+                            <GroupBox Header="Game Settings" Foreground="White" FontWeight="Bold" Margin="0,0,0,10">
+                                <StackPanel Margin="10">
+                                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                                        <TextBlock Text="Game Speed:" Width="120" Foreground="White" VerticalAlignment="Center"/>
+                                        <ComboBox x:Name="GameSpeedComboBox" Width="100" Margin="5,0">
+                                            <ComboBoxItem Content="Slow"/>
+                                            <ComboBoxItem Content="Normal" IsSelected="True"/>
+                                            <ComboBoxItem Content="Fast"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                                        <TextBlock Text="Difficulty:" Width="120" Foreground="White" VerticalAlignment="Center"/>
+                                        <ComboBox x:Name="DifficultyComboBox" Width="100" Margin="5,0">
+                                            <ComboBoxItem Content="Easy"/>
+                                            <ComboBoxItem Content="Normal" IsSelected="True"/>
+                                            <ComboBoxItem Content="Hard"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <CheckBox x:Name="GodModeCheckBox" Content="God Mode" 
+                                             Foreground="White" Margin="0,5"/>
+                                    <CheckBox x:Name="InfiniteResourcesCheckBox" Content="Infinite Resources" 
+                                             Foreground="White" Margin="0,5"/>
+                                </StackPanel>
+                            </GroupBox>
+                            
+                            <!-- Language Settings -->
+                            <GroupBox Header="Language Settings" Foreground="White" FontWeight="Bold" Margin="0,0,0,10">
+                                <StackPanel Margin="10">
+                                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                                        <TextBlock Text="Language:" Width="120" Foreground="White" VerticalAlignment="Center"/>
+                                        <ComboBox x:Name="LanguageComboBox" Width="100" Margin="5,0">
+                                            <ComboBoxItem Content="English" IsSelected="True"/>
+                                            <ComboBoxItem Content="Spanish"/>
+                                            <ComboBoxItem Content="French"/>
+                                            <ComboBoxItem Content="German"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </StackPanel>
+                            </GroupBox>
+                            
+                            <!-- Apply Button -->
+                            <Button x:Name="ApplyEasyModeButton" Content="✅ Apply Changes" 
+                                   Click="ApplyEasyMode_Click" Background="#FF28A745" 
+                                   Foreground="White" BorderBrush="#FF28A745" 
+                                   Padding="15,8" FontSize="14" FontWeight="Bold" 
+                                   HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Advanced Mode Content -->
+                    <Grid x:Name="AdvancedModePanel" Grid.Row="1" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Line Numbers -->
+                        <Border Grid.Row="0" Background="#FF3C3C3C" BorderBrush="#FF555555" 
+                               BorderThickness="0,0,0,1" Padding="5">
+                            <TextBlock x:Name="LineNumberLabel" Text="Line: 1, Column: 1" 
+                                      Foreground="White" FontSize="10"/>
+                        </Border>
+                        
+                        <!-- Code Editor with Line Numbers -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Line Numbers -->
+                            <TextBox x:Name="LineNumbersTextBox" Grid.Column="0" 
+                                    Background="#FF2D2D30" Foreground="#FF858585" 
+                                    BorderBrush="#FF555555" Padding="5,10"
+                                    FontFamily="Consolas" FontSize="12"
+                                    IsReadOnly="True" TextWrapping="NoWrap"
+                                    VerticalScrollBarVisibility="Hidden"
+                                    HorizontalScrollBarVisibility="Hidden"
+                                    Width="50" TextAlignment="Right"/>
+                            
+                            <!-- Code Editor -->
+                            <TextBox x:Name="CodeEditorTextBox" Grid.Column="1" 
+                                    Background="#FF1E1E1E" Foreground="White" 
+                                    BorderBrush="#FF555555" Padding="10"
+                                    FontFamily="Consolas" FontSize="12"
+                                    TextWrapping="NoWrap" AcceptsReturn="True"
+                                    VerticalScrollBarVisibility="Auto"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    TextChanged="CodeEditorTextBox_TextChanged"
+                                    SelectionChanged="CodeEditorTextBox_SelectionChanged"/>
+                        </Grid>
+                    </Grid>
+                    
+                    <!-- Editor Actions -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="5">
+                        <Button x:Name="SaveButton" Content="💾 Save" 
+                               Click="SaveButton_Click" Background="#FF28A745" 
+                               Foreground="White" BorderBrush="#FF28A745" 
+                               Padding="10,5" Margin="0,0,5,0"/>
+                        <Button x:Name="SaveAsButton" Content="💾 Save As..." 
+                               Click="SaveAsButton_Click" Background="#FF17A2B8" 
+                               Foreground="White" BorderBrush="#FF17A2B8" 
+                               Padding="10,5" Margin="0,0,5,0"/>
+                        <Button x:Name="ValidateButton" Content="✅ Validate" 
+                               Click="ValidateButton_Click" Background="#FFFFC107" 
+                               Foreground="Black" BorderBrush="#FFFFC107" 
+                               Padding="10,5" Margin="0,0,5,0"/>
+                        <Button x:Name="ResetButton" Content="🔄 Reset" 
+                               Click="ResetButton_Click" Background="#FFDC3545" 
+                               Foreground="White" BorderBrush="#FFDC3545" 
+                               Padding="10,5"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+        </Grid>
+        
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#FF3C3C3C" Padding="10">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse x:Name="StatusIndicator" Width="10" Height="10" Fill="Green" Margin="0,0,8,0"/>
+                <TextBlock x:Name="StatusText" Text="Ready to edit Lua files" 
+                          Foreground="White" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,35 @@
+{
+    "name": "Example Mod Pack",
+    "version": "1.0.0",
+    "author": "Castle Story Modding Tool",
+    "description": "A collection of example mods demonstrating different modding capabilities",
+    "dependencies": [],
+    "conflicts": [],
+    "settings": {
+        "enabled": true,
+        "debugMode": true,
+        "updateInterval": 0.1,
+        "enabledFeatures": [
+            "inputModification",
+            "uiEnhancement",
+            "buildingModification"
+        ],
+        "customSettings": [
+            {
+                "key": "enableDebugLogging",
+                "value": "true",
+                "type": "bool"
+            },
+            {
+                "key": "customInputKey",
+                "value": "F2",
+                "type": "string"
+            },
+            {
+                "key": "buildingEffectIntensity",
+                "value": "1.0",
+                "type": "float"
+            }
+        ]
+    }
+}
