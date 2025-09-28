@@ -24,6 +24,8 @@ jobs:
         dotnet restore Components/CastleStoryLauncher/CastleStoryLauncher.csproj
         dotnet restore Components/LANServer/LANServer.csproj
         dotnet restore Components/LANClient/LANClient.csproj
+        dotnet restore Components/MultiplayerServer/MultiplayerServer.csproj
+        dotnet restore Components/Mods/MultiplayerMod/MultiplayerMod.csproj
     
     - name: Build Easy Launcher
       run: |
@@ -45,25 +47,43 @@ jobs:
         cd Components/LANClient
         dotnet build -c Release -r win-x64 --self-contained false
     
+    - name: Build Multiplayer Server
+      run: |
+        cd Components/MultiplayerServer
+        dotnet build -c Release -r win-x64 --self-contained false
+    
+    - name: Build Multiplayer Mod
+      run: |
+        cd Components/Mods/MultiplayerMod
+        dotnet build -c Release -r win-x64 --self-contained false
+    
     - name: Create Release Package
       run: |
         mkdir Release
         mkdir Release\Components\CastleStoryLauncher
         mkdir Release\Components\LANServer
         mkdir Release\Components\LANClient
+        mkdir Release\Components\MultiplayerServer
+        mkdir Release\Components\Mods\MultiplayerMod
         mkdir Release\logs
         
         copy EasyLauncher\bin\Release\net9.0-windows\win-x64\EasyLauncher.exe Release\
         copy EasyLauncher\bin\Release\net9.0-windows\win-x64\EasyLauncher.dll Release\
         
-        copy Components\CastleStoryLauncher\bin\Release\net9.0-windows\CastleStoryLauncher.exe Release\Components\CastleStoryLauncher\
-        copy Components\CastleStoryLauncher\bin\Release\net9.0-windows\CastleStoryLauncher.dll Release\Components\CastleStoryLauncher\
+        copy Components\CastleStoryLauncher\bin\Release\net9.0-windows\win-x64\CastleStoryLauncher.exe Release\Components\CastleStoryLauncher\
+        copy Components\CastleStoryLauncher\bin\Release\net9.0-windows\win-x64\CastleStoryLauncher.dll Release\Components\CastleStoryLauncher\
         
-        copy Components\LANServer\bin\Release\net9.0-windows\LANServer.exe Release\Components\LANServer\
-        copy Components\LANServer\bin\Release\net9.0-windows\LANServer.dll Release\Components\LANServer\
+        copy Components\LANServer\bin\Release\net9.0-windows\win-x64\LANServer.exe Release\Components\LANServer\
+        copy Components\LANServer\bin\Release\net9.0-windows\win-x64\LANServer.dll Release\Components\LANServer\
         
-        copy Components\LANClient\bin\Release\net9.0-windows\LANClient.exe Release\Components\LANClient\
-        copy Components\LANClient\bin\Release\net9.0-windows\LANClient.dll Release\Components\LANClient\
+        copy Components\LANClient\bin\Release\net9.0-windows\win-x64\LANClient.exe Release\Components\LANClient\
+        copy Components\LANClient\bin\Release\net9.0-windows\win-x64\LANClient.dll Release\Components\LANClient\
+        
+        copy Components\MultiplayerServer\bin\Release\net6.0\win-x64\MultiplayerServer.exe Release\Components\MultiplayerServer\
+        copy Components\MultiplayerServer\bin\Release\net6.0\win-x64\MultiplayerServer.dll Release\Components\MultiplayerServer\
+        
+        copy Components\Mods\MultiplayerMod\bin\Release\net6.0\win-x64\MultiplayerMod.dll Release\Components\Mods\MultiplayerMod\
+        copy Components\Mods\MultiplayerMod\mod.json Release\Components\Mods\MultiplayerMod\
         
         copy version.txt Release\
         copy README.md Release\
