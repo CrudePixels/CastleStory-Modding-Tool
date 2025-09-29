@@ -57,6 +57,21 @@ jobs:
         cd Components/Mods/MultiplayerMod
         dotnet build -c Release -r win-x64 --self-contained false
     
+    - name: Debug - List build outputs
+      run: |
+        echo "=== EasyLauncher build output ==="
+        dir EasyLauncher\bin\Release\net9.0-windows\win-x64\
+        echo "=== CastleStoryLauncher build output ==="
+        dir Components\CastleStoryLauncher\bin\Release\net9.0-windows\
+        echo "=== LANServer build output ==="
+        dir Components\LANServer\bin\Release\net9.0-windows\
+        echo "=== LANClient build output ==="
+        dir Components\LANClient\bin\Release\net9.0-windows\
+        echo "=== MultiplayerServer build output ==="
+        dir Components\MultiplayerServer\bin\Release\net6.0\
+        echo "=== MultiplayerMod build output ==="
+        dir Components\Mods\MultiplayerMod\bin\Release\net6.0\
+
     - name: Create Release Package
       run: |
         mkdir Release
