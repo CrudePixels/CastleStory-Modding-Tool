@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <AssemblyName>LadderMod</AssemblyName>
     <RootNamespace>CastleStoryMods</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <StartupObject>CastleStoryMods.SimpleLadderIntegration</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
