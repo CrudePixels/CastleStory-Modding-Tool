@@ -9,18 +9,18 @@ namespace CastleStoryLauncher
     {
         public class PatchPattern
         {
-            public string Name { get; set; }
-            public string Description { get; set; }
-            public byte[] SearchPattern { get; set; }
-            public byte[] ReplacementPattern { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public byte[] SearchPattern { get; set; } = Array.Empty<byte>();
+            public byte[] ReplacementPattern { get; set; } = Array.Empty<byte>();
             public bool Enabled { get; set; }
-            public string Category { get; set; }
+            public string Category { get; set; } = string.Empty;
         }
 
         public class PatchCategory
         {
-            public string Name { get; set; }
-            public string Description { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
             public List<PatchPattern> Patterns { get; set; } = new List<PatchPattern>();
         }
 

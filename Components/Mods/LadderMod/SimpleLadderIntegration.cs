@@ -6,7 +6,7 @@ namespace CastleStoryMods
 {
     public class SimpleLadderIntegration
     {
-        private const string GAME_DATA_PATH = @"D:\SteamLibrary\steamapps\common\Castle Story\Info\Lua\Data";
+        private static string GAME_DATA_PATH = @"D:\SteamLibrary\steamapps\common\Castle Story\Info\Lua\Data";
         
         public static bool IntegrateLadders()
         {
@@ -14,11 +14,35 @@ namespace CastleStoryMods
             {
                 Console.WriteLine("Integrating ladders into Castle Story...");
                 
+                // Try to find Castle Story installation
+                var possiblePaths = new[]
+                {
+                    @"D:\SteamLibrary\steamapps\common\Castle Story\Info\Lua\Data",
+                    @"C:\Program Files (x86)\Steam\steamapps\common\Castle Story\Info\Lua\Data",
+                    @"C:\Steam\steamapps\common\Castle Story\Info\Lua\Data",
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam", "steamapps", "common", "Castle Story", "Info", "Lua", "Data"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Steam", "steamapps", "common", "Castle Story", "Info", "Lua", "Data")
+                };
+                
+                foreach (var path in possiblePaths)
+                {
+                    if (Directory.Exists(path))
+                    {
+                        GAME_DATA_PATH = path;
+                        Console.WriteLine($"Found Castle Story at: {path}");
+                        break;
+                    }
+                }
+                
                 // Check if Castle Story is installed
                 if (!Directory.Exists(GAME_DATA_PATH))
                 {
-                    Console.WriteLine($"Castle Story data directory not found at: {GAME_DATA_PATH}");
-                    Console.WriteLine("Please update the GAME_DATA_PATH in SimpleLadderIntegration.cs");
+                    Console.WriteLine($"Castle Story data directory not found. Tried paths:");
+                    foreach (var path in possiblePaths)
+                    {
+                        Console.WriteLine($"  - {path}");
+                    }
+                    Console.WriteLine("\nPlease update the GAME_DATA_PATH in SimpleLadderIntegration.cs");
                     return false;
                 }
                 

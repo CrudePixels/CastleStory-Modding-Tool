@@ -11,8 +11,8 @@ namespace CastleStoryLauncher
         public class Team
         {
             public int Id { get; set; }
-            public string Name { get; set; }
-            public string Color { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string Color { get; set; } = string.Empty;
             public List<string> Players { get; set; } = new List<string>();
             public bool IsActive { get; set; } = true;
             public int MaxPlayers { get; set; } = 4;
@@ -22,8 +22,8 @@ namespace CastleStoryLauncher
 
         public class Player
         {
-            public string Name { get; set; }
-            public string SteamId { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string SteamId { get; set; } = string.Empty;
             public int TeamId { get; set; } = -1;
             public bool IsOnline { get; set; } = false;
             public DateTime LastSeen { get; set; } = DateTime.Now;
@@ -119,7 +119,7 @@ namespace CastleStoryLauncher
             Teams.AddRange(defaultTeams);
         }
 
-        public bool AddPlayer(string playerName, string steamId = null)
+        public bool AddPlayer(string playerName, string? steamId = null)
         {
             if (Players.Any(p => p.Name == playerName))
             {

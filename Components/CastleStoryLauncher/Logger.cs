@@ -36,7 +36,7 @@ namespace CastleStoryLauncher
             Log(LogLevel.Warning, message, component);
         }
 
-        public static void LogError(string message, Exception ex = null, string component = "General")
+        public static void LogError(string message, Exception? ex = null, string component = "General")
         {
             var fullMessage = message;
             if (ex != null)
