@@ -1,0 +1,24 @@
+{
+  "name": "Test Gamemode Mod",
+  "version": "1.0.0",
+  "author": "Test Author",
+  "description": "A test mod for Castle Story gamemode modifications",
+  "category": "Gameplay",
+  "priority": 5,
+  "dependencies": [],
+  "conflicts": [],
+  "features": [
+    "Custom gamemode settings",
+    "Player limit modifications",
+    "Resource adjustments"
+  ],
+  "settings": {
+    "maxPlayers": "32",
+    "maxTeams": "16",
+    "startingResources": "2000",
+    "difficulty": "Normal"
+  },
+  "minimumGameVersion": "1.0.0",
+  "maximumGameVersion": "2.0.0",
+  "isRequired": false
+}

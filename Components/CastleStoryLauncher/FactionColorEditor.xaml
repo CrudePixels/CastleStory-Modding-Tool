@@ -1,0 +1,169 @@
+<UserControl x:Class="CastleStoryLauncher.FactionColorEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#FF2D2D30">
+    
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#FFE67C22" Padding="10" CornerRadius="5">
+            <StackPanel>
+                <TextBlock Text="🎨 Faction Color Editor" 
+                          FontSize="18" FontWeight="Bold" 
+                          Foreground="White" HorizontalAlignment="Center"/>
+                <TextBlock Text="Customize faction colors and create color palettes" 
+                          FontSize="12" 
+                          Foreground="White" HorizontalAlignment="Center" 
+                          Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Color Palette -->
+            <GroupBox Grid.Column="0" Header="Color Palette" Foreground="White" FontWeight="Bold">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400">
+                    <ItemsControl x:Name="ColorPaletteItems">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="6"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="60" Height="60" Margin="5" 
+                                       BorderBrush="White" BorderThickness="2" 
+                                       CornerRadius="5" Cursor="Hand"
+                                       MouseLeftButtonDown="ColorButton_Click">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding Color}"/>
+                                    </Border.Background>
+                                    <Border.Child>
+                                        <TextBlock Text="{Binding Name}" 
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center"
+                                                  Foreground="White" FontWeight="Bold"
+                                                  FontSize="10" TextWrapping="Wrap"/>
+                                    </Border.Child>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </GroupBox>
+            
+            <!-- Divider -->
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" 
+                         Background="#FF404040" ShowsPreview="True"/>
+            
+            <!-- Color Editor -->
+            <GroupBox Grid.Column="2" Header="Color Editor" Foreground="White" FontWeight="Bold">
+                <StackPanel>
+                    <!-- Selected Color Preview -->
+                    <Border Height="80" BorderBrush="White" BorderThickness="2" 
+                           CornerRadius="5" Margin="0,0,0,10">
+                        <Border.Background>
+                            <SolidColorBrush x:Name="SelectedColorBrush" Color="Blue"/>
+                        </Border.Background>
+                        <TextBlock x:Name="SelectedColorText" Text="Selected Color" 
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Foreground="White" FontWeight="Bold"/>
+                    </Border>
+                    
+                    <!-- Color Name -->
+                    <TextBlock Text="Color Name:" Foreground="White" Margin="0,0,0,5"/>
+                    <TextBox x:Name="ColorNameTextBox" Text="Blue" 
+                            Background="#FF404040" Foreground="White" 
+                            BorderBrush="#FF606060" Margin="0,0,0,10"/>
+                    
+                    <!-- RGB Values -->
+                    <TextBlock Text="RGB Values:" Foreground="White" Margin="0,0,0,5"/>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="R:" Width="20" Foreground="White" VerticalAlignment="Center"/>
+                            <Slider x:Name="RedSlider" Minimum="0" Maximum="255" Value="0" 
+                                   ValueChanged="ColorSlider_ValueChanged" Width="150"/>
+                            <TextBlock x:Name="RedValue" Text="0" Width="30" 
+                                      Foreground="White" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="G:" Width="20" Foreground="White" VerticalAlignment="Center"/>
+                            <Slider x:Name="GreenSlider" Minimum="0" Maximum="255" Value="0" 
+                                   ValueChanged="ColorSlider_ValueChanged" Width="150"/>
+                            <TextBlock x:Name="GreenValue" Text="0" Width="30" 
+                                      Foreground="White" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="B:" Width="20" Foreground="White" VerticalAlignment="Center"/>
+                            <Slider x:Name="BlueSlider" Minimum="0" Maximum="255" Value="255" 
+                                   ValueChanged="ColorSlider_ValueChanged" Width="150"/>
+                            <TextBlock x:Name="BlueValue" Text="255" Width="30" 
+                                      Foreground="White" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <!-- Hex Value -->
+                    <TextBlock Text="Hex Value:" Foreground="White" Margin="0,0,0,5"/>
+                    <TextBox x:Name="HexValueTextBox" Text="#0000FF" 
+                            Background="#FF404040" Foreground="White" 
+                            BorderBrush="#FF606060" Margin="0,0,0,10"
+                            TextChanged="HexValue_TextChanged"/>
+                    
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="AddColorButton" Content="Add Color" 
+                               Background="#FF4CAF50" Foreground="White" 
+                               Padding="10,5" Margin="0,0,5,0" 
+                               Click="AddColorButton_Click"/>
+                        <Button x:Name="UpdateColorButton" Content="Update" 
+                               Background="#FF2196F3" Foreground="White" 
+                               Padding="10,5" Margin="0,0,5,0" 
+                               Click="UpdateColorButton_Click"/>
+                        <Button x:Name="DeleteColorButton" Content="Delete" 
+                               Background="#FFF44336" Foreground="White" 
+                               Padding="10,5" 
+                               Click="DeleteColorButton_Click"/>
+                    </StackPanel>
+                    
+                    <!-- Preset Buttons -->
+                    <TextBlock Text="Presets:" Foreground="White" Margin="0,15,0,5"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="Default" Click="LoadDefaultPreset_Click" 
+                               Background="#FF607D8B" Foreground="White" 
+                               Padding="8,3" Margin="0,0,5,0"/>
+                        <Button Content="Rainbow" Click="LoadRainbowPreset_Click" 
+                               Background="#FF607D8B" Foreground="White" 
+                               Padding="8,3" Margin="0,0,5,0"/>
+                        <Button Content="Pastel" Click="LoadPastelPreset_Click" 
+                               Background="#FF607D8B" Foreground="White" 
+                               Padding="8,3"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+        
+        <!-- Footer -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                   HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="SaveButton" Content="💾 Save Colors" 
+                   Background="#FF4CAF50" Foreground="White" 
+                   Padding="15,8" Margin="0,0,10,0" 
+                   Click="SaveButton_Click"/>
+            <Button x:Name="CancelButton" Content="❌ Cancel" 
+                   Background="#FFF44336" Foreground="White" 
+                   Padding="15,8" 
+                   Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -15,7 +15,7 @@ namespace CastleStoryEasyLauncher
         private const string VERSION_URL = "https://api.github.com/repos/{0}/releases/latest";
         private const string DOWNLOAD_URL = "https://github.com/{0}/releases/latest/download/CastleStoryModdingTool.zip";
         
-        private string currentVersion = "1.2.0"; // Enhanced with dynamic Easy Mode and multi-file validator
+        private string currentVersion = "1.2.1"; // Enhanced with improved memory patching, better error handling, and LAN server fixes
         private string latestVersion = "";
         private bool updateAvailable = false;
         private HttpClient httpClient = new HttpClient();

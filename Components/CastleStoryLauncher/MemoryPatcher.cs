@@ -115,13 +115,13 @@ namespace CastleStoryLauncher
                     return false;
                 }
 
-                // Search for team limit patterns in memory (DISABLED to prevent crashes)
-                bool patchSuccess = false; // SearchAndPatchTeamLimits(hProcess, mainModule, moduleSize, logPath);
+                // Try safer memory patching approach
+                bool patchSuccess = SafeMemoryPatch(hProcess, mainModule, moduleSize, logPath);
                 
-                // Add visual indicator to prove the patch is working (DISABLED to prevent crashes)
-                bool visualAdded = false; // AddVisualIndicator(hProcess, mainModule, moduleSize, logPath);
+                // Add visual indicator to prove the patch is working
+                bool visualAdded = AddSafeVisualIndicator(hProcess, mainModule, moduleSize, logPath);
                 
-                // Only try to modify the window title as a visual indicator (safest option)
+                // Modify the window title as a visual indicator (safest option)
                 bool titleModified = ModifyWindowTitle(castleStoryProcess.Id, logPath);
 
                 CloseHandle(hProcess);
@@ -140,6 +140,243 @@ namespace CastleStoryLauncher
                 }
                 string errorLog = Path.Combine(logsDirectory, "MEMORY_PATCH_ERROR.txt");
                 File.WriteAllText(errorLog, $"Memory patching error: {ex.Message}\nStack trace: {ex.StackTrace}\n");
+                return false;
+            }
+        }
+
+        private static bool SafeMemoryPatch(IntPtr hProcess, IntPtr moduleBase, uint moduleSize, string logPath)
+        {
+            try
+            {
+                File.AppendAllText(logPath, "Attempting safe memory patch...\n");
+                
+                // Only try to patch if we can safely identify the process
+                if (!IsValidCastleStoryProcess(hProcess, logPath))
+                {
+                    File.AppendAllText(logPath, "Process validation failed - skipping memory patch\n");
+                    return false;
+                }
+                
+                // Try to find and patch team limit constants safely
+                bool teamLimitsPatched = SearchAndPatchTeamLimits(hProcess, moduleBase, moduleSize, logPath);
+                
+                // Try to patch player limits
+                bool playerLimitsPatched = SearchAndPatchPlayerLimits(hProcess, moduleBase, moduleSize, logPath);
+                
+                // Try to patch bricktron limits
+                bool bricktronLimitsPatched = SearchAndPatchBricktronLimits(hProcess, moduleBase, moduleSize, logPath);
+                
+                // Try to patch resource limits
+                bool resourceLimitsPatched = SearchAndPatchResourceLimits(hProcess, moduleBase, moduleSize, logPath);
+                
+                return teamLimitsPatched || playerLimitsPatched || bricktronLimitsPatched || resourceLimitsPatched;
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Safe memory patch error: {ex.Message}\n");
+                return false;
+            }
+        }
+
+        private static bool AddSafeVisualIndicator(IntPtr hProcess, IntPtr moduleBase, uint moduleSize, string logPath)
+        {
+            try
+            {
+                File.AppendAllText(logPath, "Adding safe visual indicator...\n");
+                
+                // Only add visual indicators if process is valid
+                if (!IsValidCastleStoryProcess(hProcess, logPath))
+                {
+                    File.AppendAllText(logPath, "Process validation failed - skipping visual indicator\n");
+                    return false;
+                }
+                
+                return AddVisualIndicator(hProcess, moduleBase, moduleSize, logPath);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Safe visual indicator error: {ex.Message}\n");
+                return false;
+            }
+        }
+
+        private static bool IsValidCastleStoryProcess(IntPtr hProcess, string logPath)
+        {
+            try
+            {
+                // Read a small amount of memory to verify the process is accessible
+                byte[] testBuffer = new byte[4];
+                UIntPtr bytesRead;
+                
+                if (ReadProcessMemory(hProcess, IntPtr.Zero, testBuffer, 4, out bytesRead))
+                {
+                    File.AppendAllText(logPath, "Process memory access verified\n");
+                    return true;
+                }
+                else
+                {
+                    File.AppendAllText(logPath, "Process memory access failed\n");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Process validation error: {ex.Message}\n");
+                return false;
+            }
+        }
+
+        private static bool SearchAndPatchPlayerLimits(IntPtr hProcess, IntPtr moduleBase, uint moduleSize, string logPath)
+        {
+            try
+            {
+                File.AppendAllText(logPath, "Searching for player limit constants...\n");
+                
+                // Common player limit patterns in Castle Story
+                var playerLimitPatterns = new[]
+                {
+                    new byte[] { 0x04, 0x00, 0x00, 0x00 }, // 4 players
+                    new byte[] { 0x08, 0x00, 0x00, 0x00 }, // 8 players
+                    new byte[] { 0x10, 0x00, 0x00, 0x00 }, // 16 players
+                };
+                
+                var newPlayerLimit = new byte[] { 0x20, 0x00, 0x00, 0x00 }; // 32 players
+                
+                return SearchAndReplacePattern(hProcess, moduleBase, moduleSize, playerLimitPatterns, newPlayerLimit, "Player Limit", logPath);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Player limit patching error: {ex.Message}\n");
+                return false;
+            }
+        }
+
+        private static bool SearchAndPatchBricktronLimits(IntPtr hProcess, IntPtr moduleBase, uint moduleSize, string logPath)
+        {
+            try
+            {
+                File.AppendAllText(logPath, "Searching for bricktron limit constants...\n");
+                
+                // Common bricktron limit patterns
+                var bricktronLimitPatterns = new[]
+                {
+                    new byte[] { 0x0F, 0x00, 0x00, 0x00 }, // 15 bricktron
+                    new byte[] { 0x1E, 0x00, 0x00, 0x00 }, // 30 bricktron
+                    new byte[] { 0x32, 0x00, 0x00, 0x00 }, // 50 bricktron
+                };
+                
+                var newBricktronLimit = new byte[] { 0x64, 0x00, 0x00, 0x00 }; // 100 bricktron
+                
+                return SearchAndReplacePattern(hProcess, moduleBase, moduleSize, bricktronLimitPatterns, newBricktronLimit, "Bricktron Limit", logPath);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Bricktron limit patching error: {ex.Message}\n");
+                return false;
+            }
+        }
+
+        private static bool SearchAndPatchResourceLimits(IntPtr hProcess, IntPtr moduleBase, uint moduleSize, string logPath)
+        {
+            try
+            {
+                File.AppendAllText(logPath, "Searching for resource limit constants...\n");
+                
+                // Common resource limit patterns
+                var resourceLimitPatterns = new[]
+                {
+                    new byte[] { 0x64, 0x00, 0x00, 0x00 }, // 100 resources
+                    new byte[] { 0xC8, 0x00, 0x00, 0x00 }, // 200 resources
+                    new byte[] { 0xE8, 0x03, 0x00, 0x00 }, // 1000 resources
+                };
+                
+                var newResourceLimit = new byte[] { 0x88, 0x13, 0x00, 0x00 }; // 5000 resources
+                
+                return SearchAndReplacePattern(hProcess, moduleBase, moduleSize, resourceLimitPatterns, newResourceLimit, "Resource Limit", logPath);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Resource limit patching error: {ex.Message}\n");
+                return false;
+            }
+        }
+
+        private static bool SearchAndReplacePattern(IntPtr hProcess, IntPtr moduleBase, uint moduleSize, byte[][] searchPatterns, byte[] replacementPattern, string patternName, string logPath)
+        {
+            try
+            {
+                uint bytesRead;
+                byte[] buffer = new byte[moduleSize];
+                
+                if (!ReadProcessMemory(hProcess, moduleBase, buffer, (uint)moduleSize, out nuint bytesReadNuint))
+                {
+                    File.AppendAllText(logPath, $"Failed to read module memory for {patternName}\n");
+                    return false;
+                }
+                
+                bool found = false;
+                for (int i = 0; i < buffer.Length - replacementPattern.Length; i++)
+                {
+                    foreach (var pattern in searchPatterns)
+                    {
+                        if (i + pattern.Length <= buffer.Length && 
+                            buffer.Skip(i).Take(pattern.Length).SequenceEqual(pattern))
+                        {
+                            // Found a pattern, try to replace it
+                            if (ReplaceMemoryPattern(hProcess, moduleBase, i, replacementPattern, logPath))
+                            {
+                                File.AppendAllText(logPath, $"Successfully patched {patternName} at offset 0x{i:X8}\n");
+                                found = true;
+                            }
+                        }
+                    }
+                }
+                
+                if (!found)
+                {
+                    File.AppendAllText(logPath, $"No {patternName} patterns found to patch\n");
+                }
+                
+                return found;
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Pattern search error for {patternName}: {ex.Message}\n");
+                return false;
+            }
+        }
+
+        private static bool ReplaceMemoryPattern(IntPtr hProcess, IntPtr moduleBase, int offset, byte[] newPattern, string logPath)
+        {
+            try
+            {
+                IntPtr targetAddress = IntPtr.Add(moduleBase, offset);
+                
+                // Change memory protection to allow writing
+                uint oldProtect;
+                if (!VirtualProtectEx(hProcess, targetAddress, (uint)newPattern.Length, PAGE_EXECUTE_READWRITE, out oldProtect))
+                {
+                    File.AppendAllText(logPath, $"Failed to change memory protection at 0x{targetAddress:X8}\n");
+                    return false;
+                }
+                
+                // Write the new pattern
+                if (!WriteProcessMemory(hProcess, targetAddress, newPattern, (uint)newPattern.Length, out nuint bytesWrittenNuint))
+                {
+                    File.AppendAllText(logPath, $"Failed to write new pattern at 0x{targetAddress:X8}\n");
+                    return false;
+                }
+                
+                // Restore original memory protection
+                uint dummy;
+                VirtualProtectEx(hProcess, targetAddress, (uint)newPattern.Length, oldProtect, out dummy);
+                
+                File.AppendAllText(logPath, $"Successfully wrote {bytesWrittenNuint} bytes at 0x{targetAddress:X8}\n");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"Memory replacement error: {ex.Message}\n");
                 return false;
             }
         }

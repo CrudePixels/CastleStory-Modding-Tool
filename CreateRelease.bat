@@ -32,14 +32,22 @@ copy "Components\LANClient\bin\Release\net9.0-windows\LANClient.dll" "Release\Co
 REM Copy Multiplayer Server
 echo Copying Multiplayer Server...
 mkdir "Release\Components\MultiplayerServer"
-copy "Components\MultiplayerServer\bin\Release\net9.0-windows\MultiplayerServer.exe" "Release\Components\MultiplayerServer\"
-copy "Components\MultiplayerServer\bin\Release\net9.0-windows\MultiplayerServer.dll" "Release\Components\MultiplayerServer\"
+if exist "Components\MultiplayerServer\bin\Release\net6.0\MultiplayerServer.exe" (
+    copy "Components\MultiplayerServer\bin\Release\net6.0\MultiplayerServer.exe" "Release\Components\MultiplayerServer\"
+    copy "Components\MultiplayerServer\bin\Release\net6.0\MultiplayerServer.dll" "Release\Components\MultiplayerServer\"
+) else (
+    echo Multiplayer Server not found, skipping...
+)
 
 REM Copy Multiplayer Mod
 echo Copying Multiplayer Mod...
 mkdir "Release\Components\Mods\MultiplayerMod"
-copy "Components\Mods\MultiplayerMod\bin\Release\net9.0-windows\MultiplayerMod.dll" "Release\Components\Mods\MultiplayerMod\"
-copy "Components\Mods\MultiplayerMod\mod.json" "Release\Components\Mods\MultiplayerMod\"
+if exist "Components\Mods\MultiplayerMod\bin\Release\net6.0\MultiplayerMod.dll" (
+    copy "Components\Mods\MultiplayerMod\bin\Release\net6.0\MultiplayerMod.dll" "Release\Components\Mods\MultiplayerMod\"
+    copy "Components\Mods\MultiplayerMod\mod.json" "Release\Components\Mods\MultiplayerMod\"
+) else (
+    echo Multiplayer Mod not found, skipping...
+)
 
 REM Copy version file
 copy "version.txt" "Release\"

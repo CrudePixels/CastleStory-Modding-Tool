@@ -79,6 +79,12 @@ namespace CastleStoryLauncher
         public MainWindow()
         {
             InitializeComponent();
+            
+            // Initialize logging
+            var logsDir = Path.Combine(@"D:\MyProjects\CASTLE STORY\CastleStoryModdingTool", "logs");
+            Logger.Initialize(logsDir);
+            Logger.LogInfo("Castle Story Modding Tool started", "MainWindow");
+            
             InitializeLauncher();
             SetupStatusTimer();
             LoadSettings();
@@ -267,43 +273,199 @@ namespace CastleStoryLauncher
                 if (!Directory.Exists(modsDir))
                 {
                     Directory.CreateDirectory(modsDir);
+                    UpdateStatus("Ready", "Mods directory created");
                     return;
                 }
 
                 string[] modDirectories = Directory.GetDirectories(modsDir);
+                var modInfos = new List<ModInfo>();
                 
                 foreach (string modDir in modDirectories)
                 {
-                    string modName = Path.GetFileName(modDir);
-                    string configPath = Path.Combine(modDir, "mod.json");
-                    
-                    ModInfo modInfo;
-                    if (File.Exists(configPath))
+                    try
                     {
-                        try
+                        var modInfo = LoadModInfo(modDir);
+                        if (modInfo != null)
                         {
-                            string configJson = File.ReadAllText(configPath);
-                            modInfo = JsonConvert.DeserializeObject<ModInfo>(configJson) ?? new ModInfo();
-                        }
-                        catch
-                        {
-                            modInfo = new ModInfo { name = modName };
+                            modInfos.Add(modInfo);
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        modInfo = new ModInfo { name = modName };
+                        System.Diagnostics.Debug.WriteLine($"Error loading mod from {modDir}: {ex.Message}");
                     }
-                    
-                    modInfo.IsEnabled = true;
-                    availableMods.Add(modInfo);
                 }
                 
-                UpdateStatus("Mods Loaded", $"Found {availableMods.Count} mods");
+                // Sort mods by priority (higher priority first) then by name
+                modInfos = modInfos.OrderByDescending(m => m.priority).ThenBy(m => m.name).ToList();
+                
+                // Validate mods for conflicts and dependencies
+                ValidateMods(modInfos);
+                
+                // Add validated mods to the collection
+                foreach (var mod in modInfos)
+                {
+                    availableMods.Add(mod);
+                }
+                
+                UpdateStatus("Mods Loaded", $"Found {availableMods.Count} mods ({availableMods.Count(m => m.IsEnabled)} enabled)");
+                UpdateModCount();
             }
             catch (Exception ex)
             {
                 UpdateStatus("Error", $"Failed to load mods: {ex.Message}");
+            }
+        }
+
+        private ModInfo? LoadModInfo(string modDir)
+        {
+            string modName = Path.GetFileName(modDir);
+            string configPath = Path.Combine(modDir, "mod.json");
+            
+            var modInfo = new ModInfo
+            {
+                name = modName,
+                modPath = modDir,
+                configPath = configPath,
+                lastModified = Directory.GetLastWriteTime(modDir),
+                fileSize = CalculateDirectorySize(modDir)
+            };
+            
+            if (File.Exists(configPath))
+            {
+                try
+                {
+                    string configJson = File.ReadAllText(configPath);
+                    var configData = JsonConvert.DeserializeObject<Dictionary<string, object>>(configJson);
+                    
+                    if (configData != null)
+                    {
+                        // Parse basic properties
+                        modInfo.name = configData.GetValueOrDefault("name", modName)?.ToString() ?? modName;
+                        modInfo.version = configData.GetValueOrDefault("version", "1.0.0")?.ToString() ?? "1.0.0";
+                        modInfo.author = configData.GetValueOrDefault("author", "Unknown")?.ToString() ?? "Unknown";
+                        modInfo.description = configData.GetValueOrDefault("description", "No description")?.ToString() ?? "No description";
+                        
+                        // Parse category
+                        if (configData.ContainsKey("category") && Enum.TryParse<ModCategory>(configData["category"]?.ToString(), true, out var category))
+                        {
+                            modInfo.category = category;
+                        }
+                        
+                        // Parse priority
+                        if (configData.ContainsKey("priority") && int.TryParse(configData["priority"]?.ToString(), out var priority))
+                        {
+                            modInfo.priority = priority;
+                        }
+                        
+                        // Parse dependencies
+                        if (configData.ContainsKey("dependencies") && configData["dependencies"] is Newtonsoft.Json.Linq.JArray deps)
+                        {
+                            modInfo.dependencies = deps.ToObject<List<string>>() ?? new List<string>();
+                        }
+                        
+                        // Parse conflicts
+                        if (configData.ContainsKey("conflicts") && configData["conflicts"] is Newtonsoft.Json.Linq.JArray conflicts)
+                        {
+                            modInfo.conflicts = conflicts.ToObject<List<string>>() ?? new List<string>();
+                        }
+                        
+                        // Parse features
+                        if (configData.ContainsKey("features") && configData["features"] is Newtonsoft.Json.Linq.JArray features)
+                        {
+                            modInfo.features = features.ToObject<List<string>>() ?? new List<string>();
+                        }
+                        
+                        // Parse settings
+                        if (configData.ContainsKey("settings") && configData["settings"] is Newtonsoft.Json.Linq.JObject settings)
+                        {
+                            modInfo.settings = settings.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+                        }
+                        
+                        // Parse version requirements
+                        modInfo.minimumGameVersion = configData.GetValueOrDefault("minimumGameVersion", "")?.ToString() ?? "";
+                        modInfo.maximumGameVersion = configData.GetValueOrDefault("maximumGameVersion", "")?.ToString() ?? "";
+                        
+                        // Parse required flag
+                        if (configData.ContainsKey("isRequired") && bool.TryParse(configData["isRequired"]?.ToString(), out var isRequired))
+                        {
+                            modInfo.isRequired = isRequired;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    modInfo.status = ModStatus.Error;
+                    modInfo.errorMessage = $"Failed to parse mod.json: {ex.Message}";
+                    System.Diagnostics.Debug.WriteLine($"Error parsing mod.json for {modName}: {ex.Message}");
+                }
+            }
+            else
+            {
+                modInfo.status = ModStatus.Error;
+                modInfo.errorMessage = "Missing mod.json file";
+            }
+            
+            // Set default enabled state based on mod status
+            modInfo.IsEnabled = modInfo.status == ModStatus.Ready;
+            
+            return modInfo;
+        }
+
+        private long CalculateDirectorySize(string directory)
+        {
+            try
+            {
+                return Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
+                    .Sum(file => new FileInfo(file).Length);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private void ValidateMods(List<ModInfo> mods)
+        {
+            var modNames = mods.Select(m => m.name).ToHashSet();
+            
+            foreach (var mod in mods)
+            {
+                // Check dependencies
+                foreach (var dependency in mod.dependencies)
+                {
+                    if (!modNames.Contains(dependency))
+                    {
+                        mod.status = ModStatus.MissingDependencies;
+                        mod.errorMessage = $"Missing dependency: {dependency}";
+                        mod.IsEnabled = false;
+                        break;
+                    }
+                }
+                
+                // Check conflicts
+                if (mod.status == ModStatus.Ready)
+                {
+                    foreach (var conflict in mod.conflicts)
+                    {
+                        var conflictingMod = mods.FirstOrDefault(m => m.name == conflict && m.IsEnabled);
+                        if (conflictingMod != null)
+                        {
+                            mod.status = ModStatus.Conflicting;
+                            mod.errorMessage = $"Conflicts with: {conflict}";
+                            mod.IsEnabled = false;
+                            break;
+                        }
+                    }
+                }
+                
+                // Check game version compatibility
+                if (mod.status == ModStatus.Ready && !string.IsNullOrEmpty(mod.minimumGameVersion))
+                {
+                    // This would need actual game version checking
+                    // For now, assume compatible
+                    mod.isCompatible = true;
+                }
             }
         }
 
@@ -438,6 +600,47 @@ namespace CastleStoryLauncher
             }
             
             
+            // Steam Integration Options
+            if (SteamOverlayCheckBox.IsChecked == true) args.Add("-steam-overlay");
+            if (SteamAchievementsCheckBox.IsChecked == true) args.Add("-steam-achievements");
+            if (SteamCloudCheckBox.IsChecked == true) args.Add("-steam-cloud");
+            if (SteamOfflineCheckBox.IsChecked == true) args.Add("-steam-offline");
+            if (SteamBigPictureCheckBox.IsChecked == true) args.Add("-steam-bigpicture");
+            
+            // Multiplayer Options
+            if (MultiplayerHostCheckBox.IsChecked == true) args.Add("-host");
+            if (MultiplayerClientCheckBox.IsChecked == true) args.Add("-client");
+            if (LANModeCheckBox.IsChecked == true) args.Add("-lan");
+            if (DedicatedServerCheckBox.IsChecked == true) args.Add("-dedicated-server");
+            
+            // Server configuration
+            if (!string.IsNullOrWhiteSpace(ServerPortTextBox.Text) && int.TryParse(ServerPortTextBox.Text, out int port))
+            {
+                args.Add($"-port {port}");
+            }
+            
+            if (!string.IsNullOrWhiteSpace(MaxPlayersTextBox.Text) && int.TryParse(MaxPlayersTextBox.Text, out int maxPlayers))
+            {
+                args.Add($"-maxplayers {maxPlayers}");
+            }
+            
+            // Performance Options
+            if (HighPriorityCheckBox.IsChecked == true) args.Add("-high-priority");
+            if (DisableFullscreenOptimizationsCheckBox.IsChecked == true) args.Add("-disable-fullscreen-optimizations");
+            if (DisableGameDVRCheckBox.IsChecked == true) args.Add("-disable-game-dvr");
+            if (DisableWindowsDefenderCheckBox.IsChecked == true) args.Add("-disable-windows-defender");
+            
+            // Frame rate limiting
+            if (FrameRateComboBox.SelectedItem is ComboBoxItem frameRateItem)
+            {
+                string frameRate = frameRateItem.Content.ToString() ?? "";
+                if (frameRate != "Unlimited")
+                {
+                    string fps = frameRate.Replace(" FPS", "");
+                    args.Add($"-target-fps {fps}");
+                }
+            }
+            
             // Custom arguments
             if (!string.IsNullOrWhiteSpace(CustomArgsTextBox.Text))
                 args.Add(CustomArgsTextBox.Text);
@@ -504,6 +707,47 @@ namespace CastleStoryLauncher
                 {
                     startInfo.EnvironmentVariables["UNITY_SCREEN_WIDTH"] = res[0];
                     startInfo.EnvironmentVariables["UNITY_SCREEN_HEIGHT"] = res[1];
+                }
+            }
+            
+            // Steam Integration Environment Variables
+            if (SteamOverlayCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_OVERLAY"] = "1";
+            if (SteamAchievementsCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_ACHIEVEMENTS"] = "1";
+            if (SteamCloudCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_CLOUD"] = "1";
+            if (SteamOfflineCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_OFFLINE"] = "1";
+            if (SteamBigPictureCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_BIGPICTURE"] = "1";
+            
+            // Multiplayer Environment Variables
+            if (MultiplayerHostCheckBox.IsChecked == true) startInfo.EnvironmentVariables["MULTIPLAYER_HOST"] = "1";
+            if (MultiplayerClientCheckBox.IsChecked == true) startInfo.EnvironmentVariables["MULTIPLAYER_CLIENT"] = "1";
+            if (LANModeCheckBox.IsChecked == true) startInfo.EnvironmentVariables["LAN_MODE"] = "1";
+            if (DedicatedServerCheckBox.IsChecked == true) startInfo.EnvironmentVariables["DEDICATED_SERVER"] = "1";
+            
+            // Server configuration environment variables
+            if (!string.IsNullOrWhiteSpace(ServerPortTextBox.Text) && int.TryParse(ServerPortTextBox.Text, out int envPort))
+            {
+                startInfo.EnvironmentVariables["SERVER_PORT"] = envPort.ToString();
+            }
+            
+            if (!string.IsNullOrWhiteSpace(MaxPlayersTextBox.Text) && int.TryParse(MaxPlayersTextBox.Text, out int envMaxPlayers))
+            {
+                startInfo.EnvironmentVariables["MAX_PLAYERS"] = envMaxPlayers.ToString();
+            }
+            
+            // Performance Environment Variables
+            if (HighPriorityCheckBox.IsChecked == true) startInfo.EnvironmentVariables["HIGH_PRIORITY"] = "1";
+            if (DisableFullscreenOptimizationsCheckBox.IsChecked == true) startInfo.EnvironmentVariables["DISABLE_FULLSCREEN_OPTIMIZATIONS"] = "1";
+            if (DisableGameDVRCheckBox.IsChecked == true) startInfo.EnvironmentVariables["DISABLE_GAME_DVR"] = "1";
+            if (DisableWindowsDefenderCheckBox.IsChecked == true) startInfo.EnvironmentVariables["DISABLE_WINDOWS_DEFENDER"] = "1";
+            
+            // Frame rate limiting environment variable
+            if (FrameRateComboBox.SelectedItem is ComboBoxItem frameRateEnvItem)
+            {
+                string frameRate = frameRateEnvItem.Content.ToString() ?? "";
+                if (frameRate != "Unlimited")
+                {
+                    string fps = frameRate.Replace(" FPS", "");
+                    startInfo.EnvironmentVariables["TARGET_FPS"] = fps;
                 }
             }
 
@@ -1266,20 +1510,95 @@ namespace CastleStoryLauncher
             }
         }
 
+        private void OpenMemoryPatchEditor_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                UpdateStatus("Opening", "Launching Memory Patch Editor...");
+                
+                var memoryPatchEditor = new MemoryPatchEditor();
+                memoryPatchEditor.ConfigurationSaved += (s, config) => {
+                    UpdateStatus("Memory Patch", "Configuration saved successfully");
+                };
+                
+                var window = new Window
+                {
+                    Title = "Memory Patch Configuration",
+                    Content = memoryPatchEditor,
+                    Width = 1000,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    Background = new SolidColorBrush(Color.FromRgb(45, 45, 48))
+                };
+                
+                window.ShowDialog();
+                
+                UpdateStatus("Success", "Memory Patch Editor closed");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus("Error", $"Failed to open Memory Patch Editor: {ex.Message}");
+                Logger.LogError($"Failed to open Memory Patch Editor: {ex.Message}", ex, "MainWindow");
+            }
+        }
+
+        private void OpenTeamManager_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                UpdateStatus("Opening", "Launching Team Manager...");
+                
+                var teamManagerEditor = new TeamManagerEditor();
+                teamManagerEditor.ConfigurationSaved += (s, teamManager) => {
+                    UpdateStatus("Team Manager", "Configuration saved successfully");
+                };
+                
+                var window = new Window
+                {
+                    Title = "Team Management",
+                    Content = teamManagerEditor,
+                    Width = 1200,
+                    Height = 800,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    Background = new SolidColorBrush(Color.FromRgb(45, 45, 48))
+                };
+                
+                window.ShowDialog();
+                
+                UpdateStatus("Success", "Team Manager closed");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus("Error", $"Failed to open Team Manager: {ex.Message}");
+                Logger.LogError($"Failed to open Team Manager: {ex.Message}", ex, "MainWindow");
+            }
+        }
+
         private void UpdateStatus(string action, string message)
         {
-            if (Dispatcher.CheckAccess())
+            try
             {
-                StatusText.Text = $"{action}: {message}";
-                System.Diagnostics.Debug.WriteLine($"[{action}] {message}");
-            }
-            else
-            {
-                Dispatcher.Invoke(() =>
+                if (Dispatcher.CheckAccess())
                 {
                     StatusText.Text = $"{action}: {message}";
                     System.Diagnostics.Debug.WriteLine($"[{action}] {message}");
-                });
+                    Logger.LogInfo($"{action}: {message}", "MainWindow");
+                }
+                else
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        StatusText.Text = $"{action}: {message}";
+                        System.Diagnostics.Debug.WriteLine($"[{action}] {message}");
+                        Logger.LogInfo($"{action}: {message}", "MainWindow");
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to update status: {action} - {message}", ex, "MainWindow");
             }
         }
 
@@ -1412,6 +1731,46 @@ namespace CastleStoryLauncher
         public string author { get; set; } = "Unknown";
         public string description { get; set; } = "No description";
         public bool IsEnabled { get; set; } = true;
+        public string modPath { get; set; } = "";
+        public string configPath { get; set; } = "";
+        public DateTime lastModified { get; set; } = DateTime.Now;
+        public long fileSize { get; set; } = 0;
+        public List<string> dependencies { get; set; } = new List<string>();
+        public List<string> conflicts { get; set; } = new List<string>();
+        public List<string> features { get; set; } = new List<string>();
+        public Dictionary<string, string> settings { get; set; } = new Dictionary<string, string>();
+        public ModStatus status { get; set; } = ModStatus.Ready;
+        public string errorMessage { get; set; } = "";
+        public ModCategory category { get; set; } = ModCategory.General;
+        public int priority { get; set; } = 0; // Higher number = higher priority
+        public bool isRequired { get; set; } = false;
+        public bool isCompatible { get; set; } = true;
+        public string minimumGameVersion { get; set; } = "";
+        public string maximumGameVersion { get; set; } = "";
+    }
+
+    public enum ModStatus
+    {
+        Ready,
+        Loading,
+        Error,
+        Disabled,
+        Incompatible,
+        MissingDependencies,
+        Conflicting
+    }
+
+    public enum ModCategory
+    {
+        General,
+        Graphics,
+        Gameplay,
+        Multiplayer,
+        UI,
+        Audio,
+        Performance,
+        Utility,
+        Experimental
     }
 
     public class LauncherSettings

@@ -119,75 +119,7 @@
                     <ScrollViewer x:Name="EasyModePanel" Grid.Row="1" 
                                  VerticalScrollBarVisibility="Auto" Margin="5">
                         <StackPanel>
-                            <TextBlock Text="🎯 Easy Mode - Quick Game Modifications" 
-                                      FontSize="16" FontWeight="Bold" 
-                                      Foreground="White" Margin="0,0,0,15"/>
-                            
-                            <!-- Player Settings -->
-                            <GroupBox Header="Player Settings" Foreground="White" FontWeight="Bold" Margin="0,0,0,10">
-                                <StackPanel Margin="10">
-                                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                                        <TextBlock Text="Max Players:" Width="120" Foreground="White" VerticalAlignment="Center"/>
-                                        <TextBox x:Name="MaxPlayersTextBox" Width="100" Margin="5,0"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                                        <TextBlock Text="Max Teams:" Width="120" Foreground="White" VerticalAlignment="Center"/>
-                                        <TextBox x:Name="MaxTeamsTextBox" Width="100" Margin="5,0"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                                        <TextBlock Text="Player Name:" Width="120" Foreground="White" VerticalAlignment="Center"/>
-                                        <TextBox x:Name="PlayerNameTextBox" Width="200" Margin="5,0"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </GroupBox>
-                            
-                            <!-- Game Settings -->
-                            <GroupBox Header="Game Settings" Foreground="White" FontWeight="Bold" Margin="0,0,0,10">
-                                <StackPanel Margin="10">
-                                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                                        <TextBlock Text="Game Speed:" Width="120" Foreground="White" VerticalAlignment="Center"/>
-                                        <ComboBox x:Name="GameSpeedComboBox" Width="100" Margin="5,0">
-                                            <ComboBoxItem Content="Slow"/>
-                                            <ComboBoxItem Content="Normal" IsSelected="True"/>
-                                            <ComboBoxItem Content="Fast"/>
-                                        </ComboBox>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                                        <TextBlock Text="Difficulty:" Width="120" Foreground="White" VerticalAlignment="Center"/>
-                                        <ComboBox x:Name="DifficultyComboBox" Width="100" Margin="5,0">
-                                            <ComboBoxItem Content="Easy"/>
-                                            <ComboBoxItem Content="Normal" IsSelected="True"/>
-                                            <ComboBoxItem Content="Hard"/>
-                                        </ComboBox>
-                                    </StackPanel>
-                                    <CheckBox x:Name="GodModeCheckBox" Content="God Mode" 
-                                             Foreground="White" Margin="0,5"/>
-                                    <CheckBox x:Name="InfiniteResourcesCheckBox" Content="Infinite Resources" 
-                                             Foreground="White" Margin="0,5"/>
-                                </StackPanel>
-                            </GroupBox>
-                            
-                            <!-- Language Settings -->
-                            <GroupBox Header="Language Settings" Foreground="White" FontWeight="Bold" Margin="0,0,0,10">
-                                <StackPanel Margin="10">
-                                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                                        <TextBlock Text="Language:" Width="120" Foreground="White" VerticalAlignment="Center"/>
-                                        <ComboBox x:Name="LanguageComboBox" Width="100" Margin="5,0">
-                                            <ComboBoxItem Content="English" IsSelected="True"/>
-                                            <ComboBoxItem Content="Spanish"/>
-                                            <ComboBoxItem Content="French"/>
-                                            <ComboBoxItem Content="German"/>
-                                        </ComboBox>
-                                    </StackPanel>
-                                </StackPanel>
-                            </GroupBox>
-                            
-                            <!-- Apply Button -->
-                            <Button x:Name="ApplyEasyModeButton" Content="✅ Apply Changes" 
-                                   Click="ApplyEasyMode_Click" Background="#FF28A745" 
-                                   Foreground="White" BorderBrush="#FF28A745" 
-                                   Padding="15,8" FontSize="14" FontWeight="Bold" 
-                                   HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                            <!-- Dynamic content will be loaded here -->
                         </StackPanel>
                     </ScrollViewer>
                     

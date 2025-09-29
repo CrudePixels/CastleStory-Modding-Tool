@@ -54,41 +54,112 @@
                         
                         <!-- Launch Options -->
                         <GroupBox Header="Launch Options" Foreground="White" FontWeight="Bold" Margin="0,0,0,15">
-                            <StackPanel>
-                                <TextBlock Text="Display Mode:" Foreground="White" FontWeight="Bold" Margin="0,0,0,8"/>
-                                <RadioButton x:Name="FullscreenRadio" Content="Fullscreen" 
-                                           Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
-                                <RadioButton x:Name="WindowedRadio" Content="Windowed Mode" 
-                                           Foreground="White" Margin="0,0,0,5"/>
-                                <RadioButton x:Name="BorderlessRadio" Content="Borderless Window" 
-                                           Foreground="White" Margin="0,0,0,10"/>
-                                
-                                <TextBlock Text="Resolution:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
-                                <ComboBox x:Name="ResolutionComboBox" 
-                                         Background="#FF3C3C3C" Foreground="White" 
-                                         BorderBrush="#FF555555" Padding="5" Margin="0,0,0,10">
-                                    <ComboBoxItem Content="1920x1080" IsSelected="True"/>
-                                    <ComboBoxItem Content="1680x1050"/>
-                                    <ComboBoxItem Content="1600x900"/>
-                                    <ComboBoxItem Content="1366x768"/>
-                                    <ComboBoxItem Content="1280x720"/>
-                                </ComboBox>
-                                
-                                <TextBlock Text="Graphics Quality:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
-                                <ComboBox x:Name="QualityComboBox" 
-                                         Background="#FF3C3C3C" Foreground="White" 
-                                         BorderBrush="#FF555555" Padding="5" Margin="0,0,0,10">
-                                    <ComboBoxItem Content="Ultra" IsSelected="True"/>
-                                    <ComboBoxItem Content="High"/>
-                                    <ComboBoxItem Content="Medium"/>
-                                    <ComboBoxItem Content="Low"/>
-                                </ComboBox>
-                                
-                                <CheckBox x:Name="VSyncCheckBox" Content="Enable VSync" 
-                                         Foreground="White" IsChecked="True" Margin="0,0,0,10"/>
-                                <CheckBox x:Name="AntiAliasingCheckBox" Content="Enable Anti-Aliasing" 
-                                         Foreground="White" IsChecked="True" Margin="0,0,0,10"/>
-                            </StackPanel>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400">
+                                <StackPanel>
+                                    <TextBlock Text="Display Mode:" Foreground="White" FontWeight="Bold" Margin="0,0,0,8"/>
+                                    <RadioButton x:Name="FullscreenRadio" Content="Fullscreen" 
+                                               Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
+                                    <RadioButton x:Name="WindowedRadio" Content="Windowed Mode" 
+                                               Foreground="White" Margin="0,0,0,5"/>
+                                    <RadioButton x:Name="BorderlessRadio" Content="Borderless Window" 
+                                               Foreground="White" Margin="0,0,0,10"/>
+                                    
+                                    <TextBlock Text="Resolution:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
+                                    <ComboBox x:Name="ResolutionComboBox" 
+                                             Background="#FF3C3C3C" Foreground="White" 
+                                             BorderBrush="#FF555555" Padding="5" Margin="0,0,0,10">
+                                        <ComboBoxItem Content="1920x1080" IsSelected="True"/>
+                                        <ComboBoxItem Content="1680x1050"/>
+                                        <ComboBoxItem Content="1600x900"/>
+                                        <ComboBoxItem Content="1366x768"/>
+                                        <ComboBoxItem Content="1280x720"/>
+                                        <ComboBoxItem Content="2560x1440"/>
+                                        <ComboBoxItem Content="3840x2160"/>
+                                    </ComboBox>
+                                    
+                                    <TextBlock Text="Graphics Quality:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
+                                    <ComboBox x:Name="QualityComboBox" 
+                                             Background="#FF3C3C3C" Foreground="White" 
+                                             BorderBrush="#FF555555" Padding="5" Margin="0,0,0,10">
+                                        <ComboBoxItem Content="Ultra" IsSelected="True"/>
+                                        <ComboBoxItem Content="High"/>
+                                        <ComboBoxItem Content="Medium"/>
+                                        <ComboBoxItem Content="Low"/>
+                                    </ComboBox>
+                                    
+                                    <CheckBox x:Name="VSyncCheckBox" Content="Enable VSync" 
+                                             Foreground="White" IsChecked="True" Margin="0,0,0,10"/>
+                                    <CheckBox x:Name="AntiAliasingCheckBox" Content="Enable Anti-Aliasing" 
+                                             Foreground="White" IsChecked="True" Margin="0,0,0,10"/>
+                                    
+                                    <!-- Steam Integration -->
+                                    <GroupBox Header="Steam Integration" Foreground="White" FontWeight="Bold" Margin="0,10,0,10">
+                                        <StackPanel>
+                                            <CheckBox x:Name="SteamOverlayCheckBox" Content="Enable Steam Overlay" 
+                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="SteamAchievementsCheckBox" Content="Enable Steam Achievements" 
+                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="SteamCloudCheckBox" Content="Enable Steam Cloud Saves" 
+                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="SteamOfflineCheckBox" Content="Launch in Steam Offline Mode" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="SteamBigPictureCheckBox" Content="Launch in Big Picture Mode" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    
+                                    <!-- Multiplayer Options -->
+                                    <GroupBox Header="Multiplayer Options" Foreground="White" FontWeight="Bold" Margin="0,10,0,10">
+                                        <StackPanel>
+                                            <CheckBox x:Name="MultiplayerHostCheckBox" Content="Launch as Multiplayer Host" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="MultiplayerClientCheckBox" Content="Launch as Multiplayer Client" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="LANModeCheckBox" Content="Enable LAN Mode" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="DedicatedServerCheckBox" Content="Launch as Dedicated Server" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                            
+                                            <TextBlock Text="Server Port:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
+                                            <TextBox x:Name="ServerPortTextBox" 
+                                                    Background="#FF3C3C3C" Foreground="White" 
+                                                    BorderBrush="#FF555555" Padding="5" 
+                                                    Text="7777" Margin="0,0,0,5"/>
+                                            
+                                            <TextBlock Text="Max Players:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
+                                            <TextBox x:Name="MaxPlayersTextBox" 
+                                                    Background="#FF3C3C3C" Foreground="White" 
+                                                    BorderBrush="#FF555555" Padding="5" 
+                                                    Text="32" Margin="0,0,0,5"/>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    
+                                    <!-- Performance Options -->
+                                    <GroupBox Header="Performance Options" Foreground="White" FontWeight="Bold" Margin="0,10,0,10">
+                                        <StackPanel>
+                                            <CheckBox x:Name="HighPriorityCheckBox" Content="Set High Process Priority" 
+                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="DisableFullscreenOptimizationsCheckBox" Content="Disable Fullscreen Optimizations" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="DisableGameDVRCheckBox" Content="Disable Game DVR" 
+                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
+                                            <CheckBox x:Name="DisableWindowsDefenderCheckBox" Content="Disable Windows Defender Real-time Protection" 
+                                                     Foreground="White" Margin="0,0,0,5"/>
+                                            
+                                            <TextBlock Text="Frame Rate Limit:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
+                                            <ComboBox x:Name="FrameRateComboBox" 
+                                                     Background="#FF3C3C3C" Foreground="White" 
+                                                     BorderBrush="#FF555555" Padding="5" Margin="0,0,0,5">
+                                                <ComboBoxItem Content="Unlimited" IsSelected="True"/>
+                                                <ComboBoxItem Content="60 FPS"/>
+                                                <ComboBoxItem Content="120 FPS"/>
+                                                <ComboBoxItem Content="144 FPS"/>
+                                                <ComboBoxItem Content="240 FPS"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </GroupBox>
+                                </StackPanel>
+                            </ScrollViewer>
                         </GroupBox>
                         
                         <!-- Advanced Options -->

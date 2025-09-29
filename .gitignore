@@ -357,11 +357,12 @@ logs/*.log
 *.tmp
 *.temp
 
-# Release packages
+# Release packages (but allow versioned releases)
 Release/
-*.zip
 *.7z
 *.rar
+# Allow versioned release ZIPs
+!*v*.zip
 
 # User-specific files
 *.user
