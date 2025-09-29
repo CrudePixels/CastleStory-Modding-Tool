@@ -82,6 +82,9 @@ namespace CastleStoryMods
         
         private static void UpdateGameLuaFiles()
         {
+            // Inject ladder blocks directly into the building system
+            InjectIntoBuildingSystem();
+            
             // Update the main game initialization to load our mod
             var mainLuaPath = Path.Combine(GAME_DATA_PATH, "Main.lua");
             if (File.Exists(mainLuaPath))
@@ -94,6 +97,130 @@ namespace CastleStoryMods
                     Console.WriteLine("Updated main game Lua file to load Ladder Mod");
                 }
             }
+        }
+        
+        private static void InjectIntoBuildingSystem()
+        {
+            try
+            {
+                // Find and update the building blocks file
+                var buildingBlocksPath = Path.Combine(GAME_DATA_PATH, "Data_BuildingBlocks.lua");
+                if (File.Exists(buildingBlocksPath))
+                {
+                    var content = File.ReadAllText(buildingBlocksPath);
+                    
+                    // Add ladder blocks to the existing building blocks
+                    var ladderBlocksCode = GenerateBuildingBlocksIntegration();
+                    
+                    // Insert ladder blocks before the closing of the building blocks table
+                    if (content.Contains("}"))
+                    {
+                        var lastBraceIndex = content.LastIndexOf("}");
+                        var updatedContent = content.Substring(0, lastBraceIndex) + 
+                                          ",\n\n    -- Ladder Blocks (Added by LadderMod)\n" + 
+                                          ladderBlocksCode + "\n" + 
+                                          content.Substring(lastBraceIndex);
+                        
+                        File.WriteAllText(buildingBlocksPath, updatedContent);
+                        Console.WriteLine("Injected ladder blocks into building system");
+                    }
+                }
+                
+                // Also update the building categories to include ladders
+                var buildingCategoriesPath = Path.Combine(GAME_DATA_PATH, "Data_BuildingCategories.lua");
+                if (File.Exists(buildingCategoriesPath))
+                {
+                    var content = File.ReadAllText(buildingCategoriesPath);
+                    
+                    if (!content.Contains("ladder"))
+                    {
+                        var ladderCategoryCode = GenerateBuildingCategoryIntegration();
+                        var updatedContent = content + "\n\n" + ladderCategoryCode;
+                        File.WriteAllText(buildingCategoriesPath, updatedContent);
+                        Console.WriteLine("Added ladder category to building system");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error injecting into building system: {ex.Message}");
+            }
+        }
+        
+        private static string GenerateBuildingBlocksIntegration()
+        {
+            var sb = new StringBuilder();
+            
+            // Wooden Ladder
+            sb.AppendLine("    [\"ladder_wood\"] = {");
+            sb.AppendLine("        name = \"Wooden Ladder\",");
+            sb.AppendLine("        category = \"ladder\",");
+            sb.AppendLine("        material = \"wood\",");
+            sb.AppendLine("        durability = 100,");
+            sb.AppendLine("        cost = { wood = 2 },");
+            sb.AppendLine("        icon = \"ladder_wood_icon\",");
+            sb.AppendLine("        model = \"ladder_wood_model\",");
+            sb.AppendLine("        climbSpeed = 2.0,");
+            sb.AppendLine("        maxHeight = 50,");
+            sb.AppendLine("        canClimb = true");
+            sb.AppendLine("    },");
+            
+            // Iron Ladder
+            sb.AppendLine("    [\"ladder_iron\"] = {");
+            sb.AppendLine("        name = \"Iron Ladder\",");
+            sb.AppendLine("        category = \"ladder\",");
+            sb.AppendLine("        material = \"iron\",");
+            sb.AppendLine("        durability = 200,");
+            sb.AppendLine("        cost = { iron = 1, wood = 1 },");
+            sb.AppendLine("        icon = \"ladder_iron_icon\",");
+            sb.AppendLine("        model = \"ladder_iron_model\",");
+            sb.AppendLine("        climbSpeed = 3.0,");
+            sb.AppendLine("        maxHeight = 75,");
+            sb.AppendLine("        canClimb = true");
+            sb.AppendLine("    },");
+            
+            // Stone Ladder
+            sb.AppendLine("    [\"ladder_stone\"] = {");
+            sb.AppendLine("        name = \"Stone Ladder\",");
+            sb.AppendLine("        category = \"ladder\",");
+            sb.AppendLine("        material = \"stone\",");
+            sb.AppendLine("        durability = 300,");
+            sb.AppendLine("        cost = { stone = 2 },");
+            sb.AppendLine("        icon = \"ladder_stone_icon\",");
+            sb.AppendLine("        model = \"ladder_stone_model\",");
+            sb.AppendLine("        climbSpeed = 1.6,");
+            sb.AppendLine("        maxHeight = 100,");
+            sb.AppendLine("        canClimb = true");
+            sb.AppendLine("    },");
+            
+            // Rope Ladder
+            sb.AppendLine("    [\"ladder_rope\"] = {");
+            sb.AppendLine("        name = \"Rope Ladder\",");
+            sb.AppendLine("        category = \"ladder\",");
+            sb.AppendLine("        material = \"rope\",");
+            sb.AppendLine("        durability = 50,");
+            sb.AppendLine("        cost = { rope = 3, wood = 1 },");
+            sb.AppendLine("        icon = \"ladder_rope_icon\",");
+            sb.AppendLine("        model = \"ladder_rope_model\",");
+            sb.AppendLine("        climbSpeed = 2.4,");
+            sb.AppendLine("        maxHeight = 40,");
+            sb.AppendLine("        canClimb = true");
+            sb.AppendLine("    }");
+            
+            return sb.ToString();
+        }
+        
+        private static string GenerateBuildingCategoryIntegration()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("-- Ladder Category (Added by LadderMod)");
+            sb.AppendLine("BuildingCategories[\"ladder\"] = {");
+            sb.AppendLine("    name = \"Ladders\",");
+            sb.AppendLine("    icon = \"ladder_category_icon\",");
+            sb.AppendLine("    order = 10");
+            sb.AppendLine("}");
+            
+            return sb.ToString();
         }
         
         private static string GenerateLadderConfigLua()
