@@ -1794,136 +1794,17 @@ namespace CastleStoryLauncher
         public bool LargeAddressAware { get; set; } = true;
         public bool MemoryPool { get; set; } = true;
         public bool GarbageCollection { get; set; } = true;
-    }
 
-    private void ApplySelectedMods_Click(object sender, RoutedEventArgs e)
-    {
-        try
+        private void ApplySelectedMods_Click(object sender, RoutedEventArgs e)
         {
-            var selectedMods = ModsListBox.Items.Cast<ModInfo>()
-                .Where(mod => mod.IsEnabled)
-                .ToList();
-
-            if (!selectedMods.Any())
-            {
-                MessageBox.Show("No mods selected to apply.", "No Mods Selected", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var appliedCount = 0;
-            var failedMods = new List<string>();
-
-            foreach (var mod in selectedMods)
-            {
-                try
-                {
-                    // Apply the mod (copy to game directory, enable in config, etc.)
-                    ApplyMod(mod);
-                    appliedCount++;
-                }
-                catch (Exception ex)
-                {
-                    failedMods.Add($"{mod.Name}: {ex.Message}");
-                }
-            }
-
-            var message = $"Applied {appliedCount} mod(s) successfully.";
-            if (failedMods.Any())
-            {
-                message += $"\n\nFailed to apply {failedMods.Count} mod(s):\n" + 
-                          string.Join("\n", failedMods);
-            }
-
-            MessageBox.Show(message, "Mod Application Complete", 
-                MessageBoxButton.OK, 
-                failedMods.Any() ? MessageBoxImage.Warning : MessageBoxImage.Information);
-
-            // Refresh the mod list to show updated status
-            RefreshMods_Click(sender, e);
+            MessageBox.Show("Apply Selected Mods functionality will be implemented soon!", 
+                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-        catch (Exception ex)
+
+        private void UnapplyAllMods_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show($"Error applying mods: {ex.Message}", "Error", 
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Unapply All Mods functionality will be implemented soon!", 
+                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-    }
-
-    private void UnapplyAllMods_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var result = MessageBox.Show(
-                "Are you sure you want to unapply ALL mods? This will disable all mods and restore the original game files.",
-                "Confirm Unapply All Mods",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result != MessageBoxResult.Yes)
-                return;
-
-            var unappliedCount = 0;
-            var failedMods = new List<string>();
-
-            // Get all enabled mods
-            var enabledMods = ModsListBox.Items.Cast<ModInfo>()
-                .Where(mod => mod.IsEnabled)
-                .ToList();
-
-            foreach (var mod in enabledMods)
-            {
-                try
-                {
-                    // Unapply the mod (remove from game directory, disable in config, etc.)
-                    UnapplyMod(mod);
-                    unappliedCount++;
-                }
-                catch (Exception ex)
-                {
-                    failedMods.Add($"{mod.Name}: {ex.Message}");
-                }
-            }
-
-            var message = $"Unapplied {unappliedCount} mod(s) successfully.";
-            if (failedMods.Any())
-            {
-                message += $"\n\nFailed to unapply {failedMods.Count} mod(s):\n" + 
-                          string.Join("\n", failedMods);
-            }
-
-            MessageBox.Show(message, "Mod Unapplication Complete", 
-                MessageBoxButton.OK, 
-                failedMods.Any() ? MessageBoxImage.Warning : MessageBoxImage.Information);
-
-            // Refresh the mod list to show updated status
-            RefreshMods_Click(sender, e);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Error unapplying mods: {ex.Message}", "Error", 
-                MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private void ApplyMod(ModInfo mod)
-    {
-        // Implementation for applying a single mod
-        // This would copy mod files to the game directory, update configs, etc.
-        Logger.LogInfo($"Applying mod: {mod.Name}");
-        
-        // TODO: Implement actual mod application logic
-        // For now, just mark as applied
-        mod.IsEnabled = true;
-    }
-
-    private void UnapplyMod(ModInfo mod)
-    {
-        // Implementation for unapplying a single mod
-        // This would remove mod files from game directory, restore original files, etc.
-        Logger.LogInfo($"Unapplying mod: {mod.Name}");
-        
-        // TODO: Implement actual mod unapplication logic
-        // For now, just mark as disabled
-        mod.IsEnabled = false;
     }
 }
