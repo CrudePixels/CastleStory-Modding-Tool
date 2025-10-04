@@ -92,47 +92,6 @@
                                     <CheckBox x:Name="AntiAliasingCheckBox" Content="Enable Anti-Aliasing" 
                                              Foreground="White" IsChecked="True" Margin="0,0,0,10"/>
                                     
-                                    <!-- Steam Integration -->
-                                    <GroupBox Header="Steam Integration" Foreground="White" FontWeight="Bold" Margin="0,10,0,10">
-                                        <StackPanel>
-                                            <CheckBox x:Name="SteamOverlayCheckBox" Content="Enable Steam Overlay" 
-                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
-                                            <CheckBox x:Name="SteamAchievementsCheckBox" Content="Enable Steam Achievements" 
-                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
-                                            <CheckBox x:Name="SteamCloudCheckBox" Content="Enable Steam Cloud Saves" 
-                                                     Foreground="White" IsChecked="True" Margin="0,0,0,5"/>
-                                            <CheckBox x:Name="SteamOfflineCheckBox" Content="Launch in Steam Offline Mode" 
-                                                     Foreground="White" Margin="0,0,0,5"/>
-                                            <CheckBox x:Name="SteamBigPictureCheckBox" Content="Launch in Big Picture Mode" 
-                                                     Foreground="White" Margin="0,0,0,5"/>
-                                        </StackPanel>
-                                    </GroupBox>
-                                    
-                                    <!-- Multiplayer Options -->
-                                    <GroupBox Header="Multiplayer Options" Foreground="White" FontWeight="Bold" Margin="0,10,0,10">
-                                        <StackPanel>
-                                            <CheckBox x:Name="MultiplayerHostCheckBox" Content="Launch as Multiplayer Host" 
-                                                     Foreground="White" Margin="0,0,0,5"/>
-                                            <CheckBox x:Name="MultiplayerClientCheckBox" Content="Launch as Multiplayer Client" 
-                                                     Foreground="White" Margin="0,0,0,5"/>
-                                            <CheckBox x:Name="LANModeCheckBox" Content="Enable LAN Mode" 
-                                                     Foreground="White" Margin="0,0,0,5"/>
-                                            <CheckBox x:Name="DedicatedServerCheckBox" Content="Launch as Dedicated Server" 
-                                                     Foreground="White" Margin="0,0,0,5"/>
-                                            
-                                            <TextBlock Text="Server Port:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
-                                            <TextBox x:Name="ServerPortTextBox" 
-                                                    Background="#FF3C3C3C" Foreground="White" 
-                                                    BorderBrush="#FF555555" Padding="5" 
-                                                    Text="7777" Margin="0,0,0,5"/>
-                                            
-                                            <TextBlock Text="Max Players:" Foreground="White" FontWeight="Bold" Margin="0,10,0,5"/>
-                                            <TextBox x:Name="MaxPlayersTextBox" 
-                                                    Background="#FF3C3C3C" Foreground="White" 
-                                                    BorderBrush="#FF555555" Padding="5" 
-                                                    Text="32" Margin="0,0,0,5"/>
-                                        </StackPanel>
-                                    </GroupBox>
                                     
                                     <!-- Performance Options -->
                                     <GroupBox Header="Performance Options" Foreground="White" FontWeight="Bold" Margin="0,10,0,10">
@@ -285,6 +244,10 @@
                                        Click="RefreshMods_Click" Background="#FF6C757D" 
                                        Foreground="White" BorderBrush="#FF6C757D" 
                                        Padding="10,5" Margin="0,0,10,0"/>
+                                <Button x:Name="ModDependenciesButton" Content="🔗 Dependencies" 
+                                       Click="ModDependencies_Click" Background="#FF17A2B8" 
+                                       Foreground="White" BorderBrush="#FF17A2B8" 
+                                       Padding="10,5" Margin="0,0,10,0"/>
                                 <Button x:Name="SelectAllModsButton" Content="Select All" 
                                        Click="SelectAllMods_Click" Background="#FF007ACC" 
                                        Foreground="White" BorderBrush="#FF007ACC" 
@@ -293,7 +256,6 @@
                                        Click="DeselectAllMods_Click" Background="#FFDC3545" 
                                        Foreground="White" BorderBrush="#FFDC3545" 
                                        Padding="10,5" Margin="0,0,10,0"/>
-                                <!-- Inject Ladders button temporarily disabled due to compilation issues -->
                                 <!-- Apply/Unapply buttons temporarily disabled due to WPF compilation issue -->
                             </StackPanel>
                         </Grid>

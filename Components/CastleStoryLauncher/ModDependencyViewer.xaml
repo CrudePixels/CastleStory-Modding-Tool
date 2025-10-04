@@ -1,0 +1,133 @@
+<Window x:Class="CastleStoryLauncher.ModDependencyViewer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mod Dependencies and Conflicts" Height="600" Width="900"
+        WindowStartupLocation="CenterOwner" Background="#FF2D2D30"
+        ResizeMode="CanResize">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#FFE67C22" Padding="15" CornerRadius="5" Margin="0,0,0,20">
+            <StackPanel>
+                <TextBlock Text="🔗 Mod Dependencies and Conflicts" 
+                          FontSize="18" FontWeight="Bold" 
+                          Foreground="White" HorizontalAlignment="Center"/>
+                <TextBlock Text="View mod dependencies, conflicts, and load order" 
+                          FontSize="12" 
+                          Foreground="White" HorizontalAlignment="Center" 
+                          Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Mod List -->
+            <GroupBox Grid.Column="0" Header="Available Mods" Foreground="White" FontWeight="Bold">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Filter Controls -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10,10,10,5">
+                        <ComboBox x:Name="CategoryFilter" Width="120" Margin="0,0,10,0"
+                                 Background="#FF404040" Foreground="White" BorderBrush="#FF606060"
+                                 SelectionChanged="CategoryFilter_SelectionChanged">
+                            <ComboBoxItem Content="All Categories" IsSelected="True"/>
+                        </ComboBox>
+                        <ComboBox x:Name="TagFilter" Width="120" Margin="0,0,10,0"
+                                 Background="#FF404040" Foreground="White" BorderBrush="#FF606060"
+                                 SelectionChanged="TagFilter_SelectionChanged">
+                            <ComboBoxItem Content="All Tags" IsSelected="True"/>
+                        </ComboBox>
+                        <TextBox x:Name="SearchBox" Width="200" Margin="0,0,10,0"
+                                Background="#FF404040" Foreground="White" BorderBrush="#FF606060"
+                                TextChanged="SearchBox_TextChanged"
+                                Tag="Search mods..."/>
+                    </StackPanel>
+                    
+                    <!-- Mod List -->
+                    <ListBox x:Name="ModListBox" Grid.Row="1" 
+                            Background="#FF404040" 
+                            Foreground="White" 
+                            BorderBrush="#FF606060"
+                            SelectionChanged="ModListBox_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="10">
+                                    <TextBlock Text="{Binding Name}" 
+                                              FontWeight="Bold" 
+                                              FontSize="14" 
+                                              Foreground="White"/>
+                                    <TextBlock Text="{Binding Id}" 
+                                              FontSize="11" 
+                                              Foreground="#FFCCCCCC" 
+                                              Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding Description}" 
+                                              FontSize="10" 
+                                              Foreground="#FFAAAAAA" 
+                                              Margin="0,1,0,0"
+                                              TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                        <TextBlock Text="{Binding Category}" 
+                                                  FontSize="9" 
+                                                  Foreground="#FF888888" 
+                                                  Background="#FF555555"
+                                                  Padding="5,2"/>
+                                        <TextBlock Text="{Binding Version}" 
+                                                  FontSize="9" 
+                                                  Foreground="#FF888888" 
+                                                  Background="#FF555555"
+                                                  Padding="5,2" Margin="5,0,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </GroupBox>
+            
+            <!-- Dependency Info -->
+            <GroupBox Grid.Column="2" Header="Dependency Information" Foreground="White" FontWeight="Bold">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="DependencyInfoPanel" Margin="10">
+                        <TextBlock Text="Select a mod to view its dependencies" 
+                                  Foreground="#FFAAAAAA" 
+                                  FontStyle="Italic"
+                                  TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </GroupBox>
+        </Grid>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="ValidateButton" Content="Validate Dependencies" 
+                   Click="ValidateButton_Click" 
+                   Background="#FF17A2B8" 
+                   Foreground="White" 
+                   BorderBrush="#FF17A2B8" 
+                   Padding="15,8" 
+                   Margin="0,0,10,0"/>
+            <Button x:Name="CloseButton" Content="Close" 
+                   Click="CloseButton_Click" 
+                   Background="#FF6C757D" 
+                   Foreground="White" 
+                   BorderBrush="#FF6C757D" 
+                   Padding="20,8"/>
+        </StackPanel>
+    </Grid>
+</Window>

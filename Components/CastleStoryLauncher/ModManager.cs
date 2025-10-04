@@ -23,7 +23,6 @@ namespace CastleStoryModdingTool
         private void InitializeMods()
         {
             // Register available mods
-            availableMods["LadderMod"] = LadderModDefinition.CreateIntegration();
             availableMods["MultiplayerMod"] = MultiplayerModDefinition.CreateIntegration();
         }
 

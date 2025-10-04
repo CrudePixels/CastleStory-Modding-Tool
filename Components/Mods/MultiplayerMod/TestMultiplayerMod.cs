@@ -42,7 +42,7 @@ namespace CastleStoryModding.ExampleMods
             }
         }
 
-        private static string logPath;
+        private static string logPath = string.Empty;
         private const int NEW_MAX_TEAMS = 16;
         private const int NEW_MAX_PLAYERS = 32;
 
@@ -71,6 +71,16 @@ namespace CastleStoryModding.ExampleMods
             string launcherTestFile = Path.Combine(launcherDir, "MOD_WORKING.txt");
             File.WriteAllText(launcherTestFile, $"Enhanced Multiplayer Mod by CrudePixels\nMod loaded at: {DateTime.Now}\nThis proves the mod is working!");
             
+            // Initialize Enhanced Multiplayer Systems
+            try
+            {
+                InitializeEnhancedMultiplayerSystems();
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"[{DateTime.Now}] Error initializing enhanced multiplayer systems: {ex.Message}\n");
+            }
+            
             // Try to add visual indicator to main menu
             try
             {
@@ -92,6 +102,7 @@ namespace CastleStoryModding.ExampleMods
             }
             
             File.AppendAllText(testFile, $"✅ DLL INJECTION PROOF: Mod is successfully running inside Castle Story!\n");
+            File.AppendAllText(testFile, $"✅ Enhanced Multiplayer Systems initialized!\n");
             File.AppendAllText(testFile, $"✅ Visual indicator and team limit patching attempted!\n");
         }
 
@@ -101,10 +112,10 @@ namespace CastleStoryModding.ExampleMods
             
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var gameAssemblies = assemblies.Where(a => 
-                a.GetName().Name.Contains("Assembly-CSharp") || 
-                a.GetName().Name.Contains("CastleStory") ||
-                a.GetName().Name.Contains("Unity") ||
-                a.GetName().Name.Contains("Game")
+                a.GetName().Name?.Contains("Assembly-CSharp") == true || 
+                a.GetName().Name?.Contains("CastleStory") == true ||
+                a.GetName().Name?.Contains("Unity") == true ||
+                a.GetName().Name?.Contains("Game") == true
             ).ToList();
             
             File.AppendAllText(logPath, $"[{DateTime.Now}] Found {gameAssemblies.Count} potential game assemblies\n");
@@ -215,10 +226,10 @@ namespace CastleStoryModding.ExampleMods
             
             // Look specifically for Castle Story assemblies
             var gameAssemblies = assemblies.Where(a => 
-                a.GetName().Name.Contains("Assembly-CSharp") || 
-                a.GetName().Name.Contains("CastleStory") ||
-                a.GetName().Name.Contains("Unity") ||
-                a.GetName().Name.Contains("Game")
+                a.GetName().Name?.Contains("Assembly-CSharp") == true || 
+                a.GetName().Name?.Contains("CastleStory") == true ||
+                a.GetName().Name?.Contains("Unity") == true ||
+                a.GetName().Name?.Contains("Game") == true
             ).ToList();
             
             File.AppendAllText(logPath, $"[{DateTime.Now}] Found {gameAssemblies.Count} potential game assemblies\n");
@@ -285,7 +296,7 @@ namespace CastleStoryModding.ExampleMods
                     {
                         try
                         {
-                            int originalValue = (int)field.GetValue(null);
+                            int originalValue = (int)(field.GetValue(null) ?? 0);
                             int newValue = fieldName.Contains("team") ? NEW_MAX_TEAMS : NEW_MAX_PLAYERS;
                             field.SetValue(null, newValue);
                             File.AppendAllText(logPath, $"[{DateTime.Now}] ✅ PATCHED {type.FullName}.{field.Name} from {originalValue} to {newValue}\n");
@@ -311,7 +322,7 @@ namespace CastleStoryModding.ExampleMods
                     {
                         try
                         {
-                            int originalValue = (int)property.GetValue(null);
+                            int originalValue = (int)(property.GetValue(null) ?? 0);
                             int newValue = propertyName.Contains("team") ? NEW_MAX_TEAMS : NEW_MAX_PLAYERS;
                             property.SetValue(null, newValue);
                             File.AppendAllText(logPath, $"[{DateTime.Now}] ✅ PATCHED {type.FullName}.{property.Name} from {originalValue} to {newValue}\n");
@@ -383,10 +394,10 @@ namespace CastleStoryModding.ExampleMods
             {
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                 var gameAssemblies = assemblies.Where(a => 
-                    a.GetName().Name.Contains("Assembly-CSharp") || 
-                    a.GetName().Name.Contains("CastleStory") ||
-                    a.GetName().Name.Contains("Unity") ||
-                    a.GetName().Name.Contains("Game")
+                    a.GetName().Name?.Contains("Assembly-CSharp") == true || 
+                    a.GetName().Name?.Contains("CastleStory") == true ||
+                    a.GetName().Name?.Contains("Unity") == true ||
+                    a.GetName().Name?.Contains("Game") == true
                 ).ToList();
                 
                 File.AppendAllText(logPath, $"[{DateTime.Now}] Found {gameAssemblies.Count} potential game assemblies\n");
@@ -455,7 +466,7 @@ namespace CastleStoryModding.ExampleMods
                                 }
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             // Ignore errors for individual fields
                         }
@@ -492,7 +503,7 @@ namespace CastleStoryModding.ExampleMods
                                 }
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             // Ignore errors for individual properties
                         }
@@ -513,10 +524,10 @@ namespace CastleStoryModding.ExampleMods
             {
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                 var gameAssemblies = assemblies.Where(a => 
-                    a.GetName().Name.Contains("Assembly-CSharp") || 
-                    a.GetName().Name.Contains("CastleStory") ||
-                    a.GetName().Name.Contains("Unity") ||
-                    a.GetName().Name.Contains("Game")
+                    a.GetName().Name?.Contains("Assembly-CSharp") == true || 
+                    a.GetName().Name?.Contains("CastleStory") == true ||
+                    a.GetName().Name?.Contains("Unity") == true ||
+                    a.GetName().Name?.Contains("Game") == true
                 ).ToList();
                 
                 foreach (var assembly in gameAssemblies)
@@ -574,7 +585,7 @@ namespace CastleStoryModding.ExampleMods
                         {
                             try
                             {
-                                int originalValue = (int)field.GetValue(null);
+                                int originalValue = (int)(field.GetValue(null) ?? 0);
                                 int newValue = fieldName.Contains("team") ? NEW_MAX_TEAMS : NEW_MAX_PLAYERS;
                                 
                                 if (originalValue != newValue)
@@ -613,7 +624,7 @@ namespace CastleStoryModding.ExampleMods
                         {
                             try
                             {
-                                int originalValue = (int)property.GetValue(null);
+                                int originalValue = (int)(property.GetValue(null) ?? 0);
                                 int newValue = propertyName.Contains("team") ? NEW_MAX_TEAMS : NEW_MAX_PLAYERS;
                                 
                                 if (originalValue != newValue)
@@ -655,6 +666,71 @@ namespace CastleStoryModding.ExampleMods
                         File.AppendAllText(gameLogPath, $"[{DateTime.Now}] Delayed patching error: {ex.Message}\n");
                     }
                 });
+        }
+
+        private static void InitializeEnhancedMultiplayerSystems()
+        {
+            File.AppendAllText(logPath, $"[{DateTime.Now}] 🚀 Initializing Enhanced Multiplayer Systems...\n");
+            
+            try
+            {
+                // Initialize Enhanced Networking
+                var networking = EnhancedNetworking.Instance;
+                File.AppendAllText(logPath, $"[{DateTime.Now}] ✅ Enhanced Networking initialized\n");
+                
+                // Initialize Lobby Manager
+                var lobbyManager = LobbyManager.Instance;
+                lobbyManager.SetNetworking(networking);
+                File.AppendAllText(logPath, $"[{DateTime.Now}] ✅ Lobby Manager initialized\n");
+                
+                // Initialize Spectator Mode
+                var spectatorMode = SpectatorMode.Instance;
+                spectatorMode.SetNetworking(networking);
+                spectatorMode.SetLobbyManager(lobbyManager);
+                File.AppendAllText(logPath, $"[{DateTime.Now}] ✅ Spectator Mode initialized\n");
+                
+                // Subscribe to events for logging
+                networking.PlayerJoined += (sender, e) => {
+                    File.AppendAllText(logPath, $"[{DateTime.Now}] Player joined: {e.Player.Name} ({e.Player.IPAddress})\n");
+                };
+                
+                networking.PlayerLeft += (sender, e) => {
+                    File.AppendAllText(logPath, $"[{DateTime.Now}] Player left: {e.Player.Name}\n");
+                };
+                
+                networking.SpectatorJoined += (sender, e) => {
+                    File.AppendAllText(logPath, $"[{DateTime.Now}] Spectator joined: {e.Spectator.Name}\n");
+                };
+                
+                lobbyManager.LobbyStateChanged += (sender, e) => {
+                    File.AppendAllText(logPath, $"[{DateTime.Now}] Lobby state changed: {e.LobbyState.Status}\n");
+                };
+                
+                // Note: SpectatorJoined event is handled by EnhancedNetworking
+                
+                // Initialize default lobby
+                lobbyManager.InitializeLobby("classic", "default_plains");
+                File.AppendAllText(logPath, $"[{DateTime.Now}] ✅ Default lobby initialized (Classic mode on Plains of War)\n");
+                
+                // Log available features
+                File.AppendAllText(logPath, $"[{DateTime.Now}] 🎮 Enhanced Multiplayer Features Available:\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Up to {networking.MaxPlayers} players\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Up to {networking.MaxSpectators} spectators\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Host migration support\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Advanced lobby management\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Multiple camera modes for spectators\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Real-time player synchronization\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Custom gamemodes and maps\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Team management system\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}]   • Spectator chat and replay system\n");
+                
+                File.AppendAllText(logPath, $"[{DateTime.Now}] ✅ Enhanced Multiplayer Systems fully initialized!\n");
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logPath, $"[{DateTime.Now}] ❌ Error initializing enhanced multiplayer systems: {ex.Message}\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}] Stack trace: {ex.StackTrace}\n");
+            }
         }
     }
 }

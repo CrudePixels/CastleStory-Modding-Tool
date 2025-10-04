@@ -68,7 +68,17 @@ namespace CastleStoryLauncher
                     EasyModePanel.Visibility = Visibility.Visible;
                 if (AdvancedModePanel != null)
                     AdvancedModePanel.Visibility = Visibility.Collapsed;
-                LoadEasyModeSettings();
+                
+                // Reload the current file content in Easy Mode
+                if (!string.IsNullOrEmpty(currentFilePath) && File.Exists(currentFilePath))
+                {
+                    LoadEasyModeSettings();
+                }
+                else
+                {
+                    // Clear the panel if no file is loaded
+                    ClearDynamicEasyModeControls();
+                }
             }
             catch (Exception ex)
             {
@@ -204,7 +214,12 @@ namespace CastleStoryLauncher
         {
             if (FileListBox.SelectedItem != null)
             {
-                LoadFile(FileListBox.SelectedItem.ToString());
+                var selectedFile = FileListBox.SelectedItem.ToString();
+                // Only load if it's a different file than currently loaded
+                if (currentFilePath == null || !currentFilePath.EndsWith(selectedFile ?? ""))
+                {
+                    LoadFile(selectedFile ?? "");
+                }
             }
         }
 
@@ -251,6 +266,12 @@ namespace CastleStoryLauncher
                     
                     UpdateStatus($"Loaded: {relativePath}", true);
                     UpdateLineNumbers();
+                    
+                    // Parse content for Easy Mode if in Easy Mode
+                    if (isEasyMode)
+                    {
+                        ParseContentForEasyMode(content, extension);
+                    }
                 }
             }
             catch (Exception ex)
@@ -318,6 +339,47 @@ namespace CastleStoryLauncher
             }
         }
 
+        private void PresetButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowPresetsEasyMode();
+        }
+
+        private void FactionColorEditorButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                UpdateStatus("Opening Faction Color Editor...", true);
+                
+                var colorEditor = new FactionColorEditor();
+                colorEditor.ColorsSaved += (s, args) => {
+                    // Generate and save the faction colors Lua code
+                    var luaCode = colorEditor.GenerateLuaCode();
+                    CodeEditorTextBox.Text = luaCode;
+                    originalContent = luaCode;
+                    hasUnsavedChanges = true;
+                    UpdateStatus("Faction colors updated", true);
+                };
+                
+                var window = new Window
+                {
+                    Title = "Faction Color Editor",
+                    Content = colorEditor,
+                    Width = 800,
+                    Height = 600,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    Background = new SolidColorBrush(Color.FromRgb(45, 45, 48))
+                };
+                
+                window.ShowDialog();
+                UpdateStatus("Faction Color Editor closed", true);
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error opening Faction Color Editor: {ex.Message}", false);
+            }
+        }
+
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             SaveCurrentFile();
@@ -346,7 +408,7 @@ namespace CastleStoryLauncher
             {
                 if (string.IsNullOrEmpty(currentFilePath))
                 {
-                    SaveAsButton_Click(null, null);
+                    SaveAsButton_Click(null!, null!);
                     return;
                 }
 
@@ -850,6 +912,30 @@ namespace CastleStoryLauncher
             dynamicControls.Add(buttonGroup);
         }
         
+        private void ParseContentForEasyMode(string content, string extension)
+        {
+            ClearDynamicEasyModeControls();
+            
+            switch (extension)
+            {
+                case ".lua":
+                    ParseLuaSettings(content);
+                    break;
+                case ".json":
+                    ParseJsonSettings(content);
+                    break;
+                case ".xml":
+                    ParseXmlSettings(content);
+                    break;
+                case ".csv":
+                    ParseCsvSettings(content);
+                    break;
+                default:
+                    ShowBasicTextEditor();
+                    break;
+            }
+        }
+
         private void ParseLuaSettings(string content)
         {
             ClearDynamicEasyModeControls();
@@ -867,13 +953,9 @@ namespace CastleStoryLauncher
             {
                 ParseLanguageFile(content);
             }
-            else if (content.Contains("Faction") && (content.Contains("Color") || content.Contains("FactionColor")))
+            else if (content.Contains("Faction") && (content.Contains("Color") || content.Contains("FactionColor") || content.Contains("colour") || content.Contains("factions")))
             {
                 ParseFactionColors(content);
-            }
-            else if (content.Contains("Ladder") && content.Contains("Config"))
-            {
-                ParseLadderConfig(content);
             }
             else
             {
@@ -1435,8 +1517,109 @@ namespace CastleStoryLauncher
             dynamicControls.Add(basicGroup);
         }
         
+        private void ParseBricktronNames(string content)
+        {
+            ClearDynamicEasyModeControls();
+            
+            var configGroup = new GroupBox
+            {
+                Header = "🤖 Bricktron Names Configuration",
+                Margin = new Thickness(10),
+                Padding = new Thickness(10)
+            };
+            
+            var stackPanel = new StackPanel();
+            
+            var infoText = new TextBlock
+            {
+                Text = "Configure Bricktron names for your Castle Story game.",
+                Foreground = new SolidColorBrush(Colors.LightBlue),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            stackPanel.Children.Add(infoText);
+            
+            var openEditorButton = new Button
+            {
+                Content = "🔧 Open Bricktron Names Editor",
+                Background = new SolidColorBrush(Colors.Green),
+                Foreground = new SolidColorBrush(Colors.White),
+                Padding = new Thickness(15, 8, 15, 8),
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            openEditorButton.Click += (s, e) => {
+                // TODO: Open Bricktron Names Editor
+                UpdateStatus("Bricktron Names Editor not yet implemented", false);
+            };
+            stackPanel.Children.Add(openEditorButton);
+            
+            configGroup.Content = stackPanel;
+            if (EasyModePanel.Content is StackPanel easyPanel)
+            {
+                easyPanel.Children.Add(configGroup);
+            }
+            dynamicControls.Add(configGroup);
+        }
+
+        private void ParseLanguageFile(string content)
+        {
+            ClearDynamicEasyModeControls();
+            
+            var configGroup = new GroupBox
+            {
+                Header = "🌐 Language/Translations Configuration",
+                Margin = new Thickness(10),
+                Padding = new Thickness(10)
+            };
+            
+            var stackPanel = new StackPanel();
+            
+            var infoText = new TextBlock
+            {
+                Text = "Configure language files and translations for your Castle Story game.",
+                Foreground = new SolidColorBrush(Colors.LightBlue),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            stackPanel.Children.Add(infoText);
+            
+            var openEditorButton = new Button
+            {
+                Content = "🔧 Open Language Editor",
+                Background = new SolidColorBrush(Colors.Green),
+                Foreground = new SolidColorBrush(Colors.White),
+                Padding = new Thickness(15, 8, 15, 8),
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            openEditorButton.Click += (s, e) => {
+                // TODO: Open Language Editor
+                UpdateStatus("Language Editor not yet implemented", false);
+            };
+            stackPanel.Children.Add(openEditorButton);
+            
+            configGroup.Content = stackPanel;
+            if (EasyModePanel.Content is StackPanel easyPanel)
+            {
+                easyPanel.Children.Add(configGroup);
+            }
+            dynamicControls.Add(configGroup);
+        }
+
+
         private void ParseFactionColors(string content)
         {
+            ClearDynamicEasyModeControls();
+            
+            // Double-check that no faction color controls exist
+            if (dynamicControls.Any(c => c is GroupBox gb && gb.Header?.ToString()?.Contains("Faction Color") == true))
+            {
+                return; // Already exists, don't create another
+            }
+            
             var configGroup = new GroupBox
             {
                 Header = "🎨 Faction Color Configuration",
@@ -1516,6 +1699,7 @@ namespace CastleStoryLauncher
             {
                 easyPanel.Children.Add(configGroup);
             }
+            dynamicControls.Add(configGroup);
         }
 
         private void OpenFactionColorEditor_Click(object sender, RoutedEventArgs e)
@@ -1551,182 +1735,6 @@ namespace CastleStoryLauncher
             }
         }
 
-        private void ParseLadderConfig(string content)
-        {
-            var configGroup = new GroupBox
-            {
-                Header = "🪜 Ladder System Configuration",
-                Margin = new Thickness(10),
-                Padding = new Thickness(10)
-            };
-            
-            var stackPanel = new StackPanel();
-            
-            // Add info text
-            var infoText = new TextBlock
-            {
-                Text = "Configure the enhanced ladder system for Castle Story. Enable climbing mechanics, set ladder types, and customize physics.",
-                Foreground = new SolidColorBrush(Colors.LightGreen),
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            stackPanel.Children.Add(infoText);
-            
-            // Parse ladder configuration
-            var ladderConfig = ParseLuaTable(content, "LadderConfig");
-            
-            // Basic Settings Section
-            var basicGroup = new GroupBox { Header = "Basic Settings", Margin = new Thickness(0, 5, 0, 5) };
-            var basicPanel = new StackPanel();
-            
-            AddBooleanField(basicPanel, "Enable Ladder System", "enabled", ladderConfig, "true");
-            AddNumericField(basicPanel, "Maximum Height", "maxHeight", ladderConfig, "50");
-            AddNumericField(basicPanel, "Climb Speed", "climbSpeed", ladderConfig, "2.0");
-            AddBooleanField(basicPanel, "Auto Snap to Ladder", "autoSnap", ladderConfig, "true");
-            
-            basicGroup.Content = basicPanel;
-            stackPanel.Children.Add(basicGroup);
-            
-            // Physics Settings Section
-            var physicsGroup = new GroupBox { Header = "Physics Settings", Margin = new Thickness(0, 5, 0, 5) };
-            var physicsPanel = new StackPanel();
-            
-            var physicsConfig = ParseLuaTable(content, "LadderConfig.physics");
-            AddNumericField(physicsPanel, "Grab Distance", "grabDistance", physicsConfig, "2.0");
-            AddNumericField(physicsPanel, "Release Distance", "releaseDistance", physicsConfig, "3.0");
-            AddNumericField(physicsPanel, "Snap Distance", "snapDistance", physicsConfig, "1.0");
-            AddNumericField(physicsPanel, "Climb Height", "climbHeight", physicsConfig, "1.0");
-            AddBooleanField(physicsPanel, "Fall Damage", "fallDamage", physicsConfig, "false");
-            
-            physicsGroup.Content = physicsPanel;
-            stackPanel.Children.Add(physicsGroup);
-            
-            // Requirements Section
-            var requirementsGroup = new GroupBox { Header = "Building Requirements", Margin = new Thickness(0, 5, 0, 5) };
-            var requirementsPanel = new StackPanel();
-            
-            var reqConfig = ParseLuaTable(content, "LadderConfig.requirements");
-            AddNumericField(requirementsPanel, "Minimum Level", "minLevel", reqConfig, "1");
-            AddBooleanField(requirementsPanel, "Requires Blueprint", "requiresBlueprint", reqConfig, "false");
-            AddNumericField(requirementsPanel, "Max Per Player", "maxPerPlayer", reqConfig, "10");
-            AddNumericField(requirementsPanel, "Cooldown (seconds)", "cooldown", reqConfig, "5.0");
-            
-            requirementsGroup.Content = requirementsPanel;
-            stackPanel.Children.Add(requirementsGroup);
-            
-            // Ladder Types Section
-            var typesGroup = new GroupBox { Header = "Ladder Types", Margin = new Thickness(0, 5, 0, 5) };
-            var typesPanel = new StackPanel();
-            
-            var typesInfo = new TextBlock
-            {
-                Text = "Configure different ladder types with varying materials, durability, and costs.",
-                Foreground = new SolidColorBrush(Colors.LightGray),
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-            typesPanel.Children.Add(typesInfo);
-            
-            // Add ladder type buttons
-            var ladderTypes = new[] { "Wooden Ladder", "Iron Ladder", "Stone Ladder", "Rope Ladder" };
-            var typesButtonPanel = new WrapPanel();
-            
-            foreach (var ladderType in ladderTypes)
-            {
-                var typeButton = new Button
-                {
-                    Content = ladderType,
-                    Width = 120,
-                    Height = 35,
-                    Margin = new Thickness(5),
-                    Background = new SolidColorBrush(Colors.DarkSlateGray),
-                    Foreground = new SolidColorBrush(Colors.White),
-                    FontWeight = FontWeights.Bold,
-                    Cursor = Cursors.Hand
-                };
-                typeButton.Click += (s, e) => EditLadderType_Click(ladderType);
-                typesButtonPanel.Children.Add(typeButton);
-            }
-            
-            typesPanel.Children.Add(typesButtonPanel);
-            typesGroup.Content = typesPanel;
-            stackPanel.Children.Add(typesGroup);
-            
-            // Action Buttons
-            var actionPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 15, 0, 0)
-            };
-            
-            var enableButton = new Button
-            {
-                Content = "✅ Enable Ladder System",
-                Background = new SolidColorBrush(Colors.DarkGreen),
-                Foreground = new SolidColorBrush(Colors.White),
-                Padding = new Thickness(15, 8, 15, 8),
-                Margin = new Thickness(0, 0, 10, 0),
-                FontWeight = FontWeights.Bold
-            };
-            enableButton.Click += EnableLadderSystem_Click;
-            actionPanel.Children.Add(enableButton);
-            
-            var testButton = new Button
-            {
-                Content = "🧪 Test Ladder",
-                Background = new SolidColorBrush(Colors.DarkBlue),
-                Foreground = new SolidColorBrush(Colors.White),
-                Padding = new Thickness(15, 8, 15, 8),
-                Margin = new Thickness(0, 0, 10, 0),
-                FontWeight = FontWeights.Bold
-            };
-            testButton.Click += TestLadderSystem_Click;
-            actionPanel.Children.Add(testButton);
-            
-            var resetButton = new Button
-            {
-                Content = "🔄 Reset to Defaults",
-                Background = new SolidColorBrush(Colors.DarkOrange),
-                Foreground = new SolidColorBrush(Colors.White),
-                Padding = new Thickness(15, 8, 15, 8),
-                FontWeight = FontWeights.Bold
-            };
-            resetButton.Click += ResetLadderConfig_Click;
-            actionPanel.Children.Add(resetButton);
-            
-            stackPanel.Children.Add(actionPanel);
-            
-            configGroup.Content = stackPanel;
-            if (EasyModePanel.Content is StackPanel easyPanel)
-            {
-                easyPanel.Children.Add(configGroup);
-            }
-        }
-
-        private void EditLadderType_Click(string ladderType)
-        {
-            UpdateStatus($"Editing ladder type: {ladderType}", true);
-            // This would open a detailed editor for the specific ladder type
-        }
-
-        private void EnableLadderSystem_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateStatus("Enabling ladder system...", true);
-            // This would enable the ladder system in the game
-        }
-
-        private void TestLadderSystem_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateStatus("Testing ladder system...", true);
-            // This would test the ladder system functionality
-        }
-
-        private void ResetLadderConfig_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateStatus("Resetting ladder configuration to defaults...", true);
-            // This would reset the ladder configuration
-        }
 
         private void ShowBasicLuaEditor(string content)
         {
@@ -1933,17 +1941,6 @@ Language = {
             UpdateStatus("Created language template", true);
         }
         
-        private void ParseBricktronNames(string content)
-        {
-            // Implementation for parsing bricktron names
-            ShowBasicLuaEditor(content);
-        }
-        
-        private void ParseLanguageFile(string content)
-        {
-            // Implementation for parsing language files
-            ShowBasicLuaEditor(content);
-        }
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1997,7 +1994,7 @@ Language = {
             }
         }
 
-        private void UpdateStatus(string message = null, bool isSuccess = true)
+        private void UpdateStatus(string? message = null, bool isSuccess = true)
         {
             if (message != null)
             {

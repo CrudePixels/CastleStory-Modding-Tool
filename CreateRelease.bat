@@ -6,10 +6,11 @@ REM Create release directory
 if exist "Release" rmdir /s /q "Release"
 mkdir "Release"
 
-REM Copy main launcher
-echo Copying Easy Launcher...
-copy "EasyLauncher\bin\Release\net9.0-windows\win-x64\EasyLauncher.exe" "Release\"
-copy "EasyLauncher\bin\Release\net9.0-windows\win-x64\EasyLauncher.dll" "Release\"
+REM Build and copy main launcher (self-contained)
+echo Building Easy Launcher (self-contained)...
+dotnet publish "EasyLauncher\EasyLauncher.csproj" --configuration Release --runtime win-x64 --self-contained true --output "Release\EasyLauncher-Temp"
+copy "Release\EasyLauncher-Temp\EasyLauncher.exe" "Release\"
+rmdir /s /q "Release\EasyLauncher-Temp"
 
 REM Copy Castle Story Launcher
 echo Copying Castle Story Launcher...

@@ -12,17 +12,11 @@ namespace CastleStoryLauncher
 {
     public partial class FactionColorEditor : UserControl
     {
-        public class FactionColor
-        {
-            public string Name { get; set; }
-            public Color Color { get; set; }
-            public string HexValue => $"#{Color.R:X2}{Color.G:X2}{Color.B:X2}";
-        }
 
         public ObservableCollection<FactionColor> FactionColors { get; private set; }
-        public FactionColor SelectedColor { get; private set; }
-        public event EventHandler<FactionColor> ColorSelected;
-        public event EventHandler ColorsSaved;
+        public FactionColor? SelectedColor { get; private set; }
+        public event EventHandler<FactionColor>? ColorSelected;
+        public event EventHandler? ColorsSaved;
 
         public FactionColorEditor()
         {
@@ -97,9 +91,14 @@ namespace CastleStoryLauncher
             SelectedColorBrush.Color = color.Color;
             SelectedColorText.Text = color.Name;
             ColorNameTextBox.Text = color.Name;
+            
+            // Update RGB sliders and text blocks
             RedSlider.Value = color.Color.R;
             GreenSlider.Value = color.Color.G;
             BlueSlider.Value = color.Color.B;
+            RedValue.Text = color.Color.R.ToString();
+            GreenValue.Text = color.Color.G.ToString();
+            BlueValue.Text = color.Color.B.ToString();
             HexValueTextBox.Text = color.HexValue;
             
             ColorSelected?.Invoke(this, color);
@@ -117,6 +116,11 @@ namespace CastleStoryLauncher
                 
                 SelectedColorBrush.Color = newColor;
                 HexValueTextBox.Text = $"#{newColor.R:X2}{newColor.G:X2}{newColor.B:X2}";
+                
+                // Update RGB text blocks
+                RedValue.Text = newColor.R.ToString();
+                GreenValue.Text = newColor.G.ToString();
+                BlueValue.Text = newColor.B.ToString();
                 
                 // Update the selected color
                 SelectedColor.Color = newColor;
@@ -141,6 +145,11 @@ namespace CastleStoryLauncher
                         RedSlider.Value = color.R;
                         GreenSlider.Value = color.G;
                         BlueSlider.Value = color.B;
+                        
+                        // Update RGB text blocks
+                        RedValue.Text = color.R.ToString();
+                        GreenValue.Text = color.G.ToString();
+                        BlueValue.Text = color.B.ToString();
                     }
                 }
                 catch

@@ -90,6 +90,9 @@ namespace CastleStoryLauncher
             SetupStatusTimer();
             LoadSettings();
             
+            // Auto-detect game installation if not already set
+            AutoDetectGameInstallation();
+            
             // Check if we should open the editor directly
             var args = Environment.GetCommandLineArgs();
             System.Diagnostics.Debug.WriteLine($"Command line args: {string.Join(" ", args)}");
@@ -174,6 +177,38 @@ namespace CastleStoryLauncher
 
         private void BrowseGame_Click(object sender, RoutedEventArgs e)
         {
+            // First try to auto-detect installations
+            var installations = GameDetector.DetectAllInstallations();
+            
+            if (installations.Count > 1)
+            {
+                // Show installation picker dialog
+                var pickerDialog = new GameInstallationPicker(installations);
+                if (pickerDialog.ShowDialog() == true)
+                {
+                    var selectedInstallation = pickerDialog.SelectedInstallation;
+                    if (selectedInstallation != null)
+                    {
+                        GameDirectoryTextBox.Text = selectedInstallation.Path;
+                        gameExecutablePath = selectedInstallation.ExecutablePath;
+                        ValidateGamePath();
+                        SaveSettings();
+                        return;
+                    }
+                }
+            }
+            else if (installations.Count == 1)
+            {
+                // Auto-select the only installation found
+                var installation = installations[0];
+                GameDirectoryTextBox.Text = installation.Path;
+                gameExecutablePath = installation.ExecutablePath;
+                ValidateGamePath();
+                SaveSettings();
+                return;
+            }
+
+            // Fall back to manual selection
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Select Castle Story Executable",
@@ -187,6 +222,28 @@ namespace CastleStoryLauncher
                 gameExecutablePath = dialog.FileName;
                 ValidateGamePath();
                 SaveSettings();
+            }
+        }
+
+        private void AutoDetectGameInstallation()
+        {
+            // Only auto-detect if no game path is currently set
+            if (string.IsNullOrEmpty(GameDirectoryTextBox.Text) || !GameDetector.IsValidGameDirectory(GameDirectoryTextBox.Text))
+            {
+                var bestInstallation = GameDetector.DetectBestInstallation();
+                if (bestInstallation != null)
+                {
+                    GameDirectoryTextBox.Text = bestInstallation.Path;
+                    gameExecutablePath = bestInstallation.ExecutablePath;
+                    GameStatusText.Text = $"Auto-detected: {bestInstallation.Platform} - {bestInstallation.Version}";
+                    GameStatusText.Foreground = new SolidColorBrush(Colors.LightGreen);
+                    Logger.LogInfo($"Auto-detected Castle Story installation: {bestInstallation.Platform} at {bestInstallation.Path}", "MainWindow");
+                }
+                else
+                {
+                    GameStatusText.Text = "No Castle Story installation detected";
+                    GameStatusText.Foreground = new SolidColorBrush(Colors.Orange);
+                }
             }
         }
 
@@ -471,6 +528,23 @@ namespace CastleStoryLauncher
         }
 
         private void RefreshMods_Click(object sender, RoutedEventArgs e) => RefreshMods();
+        
+        private void ModDependencies_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dependencyManager = new ModDependencyManager(modsDirectory);
+                var dependencyViewer = new ModDependencyViewer(dependencyManager);
+                dependencyViewer.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error opening mod dependencies viewer: {ex.Message}", ex, "MainWindow");
+                MessageBox.Show($"Error opening mod dependencies viewer: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
         private void SelectAllMods_Click(object sender, RoutedEventArgs e)
         {
             foreach (var mod in availableMods) mod.IsEnabled = true;
@@ -605,29 +679,6 @@ namespace CastleStoryLauncher
             }
             
             
-            // Steam Integration Options
-            if (SteamOverlayCheckBox.IsChecked == true) args.Add("-steam-overlay");
-            if (SteamAchievementsCheckBox.IsChecked == true) args.Add("-steam-achievements");
-            if (SteamCloudCheckBox.IsChecked == true) args.Add("-steam-cloud");
-            if (SteamOfflineCheckBox.IsChecked == true) args.Add("-steam-offline");
-            if (SteamBigPictureCheckBox.IsChecked == true) args.Add("-steam-bigpicture");
-            
-            // Multiplayer Options
-            if (MultiplayerHostCheckBox.IsChecked == true) args.Add("-host");
-            if (MultiplayerClientCheckBox.IsChecked == true) args.Add("-client");
-            if (LANModeCheckBox.IsChecked == true) args.Add("-lan");
-            if (DedicatedServerCheckBox.IsChecked == true) args.Add("-dedicated-server");
-            
-            // Server configuration
-            if (!string.IsNullOrWhiteSpace(ServerPortTextBox.Text) && int.TryParse(ServerPortTextBox.Text, out int port))
-            {
-                args.Add($"-port {port}");
-            }
-            
-            if (!string.IsNullOrWhiteSpace(MaxPlayersTextBox.Text) && int.TryParse(MaxPlayersTextBox.Text, out int maxPlayers))
-            {
-                args.Add($"-maxplayers {maxPlayers}");
-            }
             
             // Performance Options
             if (HighPriorityCheckBox.IsChecked == true) args.Add("-high-priority");
@@ -715,29 +766,6 @@ namespace CastleStoryLauncher
                 }
             }
             
-            // Steam Integration Environment Variables
-            if (SteamOverlayCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_OVERLAY"] = "1";
-            if (SteamAchievementsCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_ACHIEVEMENTS"] = "1";
-            if (SteamCloudCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_CLOUD"] = "1";
-            if (SteamOfflineCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_OFFLINE"] = "1";
-            if (SteamBigPictureCheckBox.IsChecked == true) startInfo.EnvironmentVariables["STEAM_BIGPICTURE"] = "1";
-            
-            // Multiplayer Environment Variables
-            if (MultiplayerHostCheckBox.IsChecked == true) startInfo.EnvironmentVariables["MULTIPLAYER_HOST"] = "1";
-            if (MultiplayerClientCheckBox.IsChecked == true) startInfo.EnvironmentVariables["MULTIPLAYER_CLIENT"] = "1";
-            if (LANModeCheckBox.IsChecked == true) startInfo.EnvironmentVariables["LAN_MODE"] = "1";
-            if (DedicatedServerCheckBox.IsChecked == true) startInfo.EnvironmentVariables["DEDICATED_SERVER"] = "1";
-            
-            // Server configuration environment variables
-            if (!string.IsNullOrWhiteSpace(ServerPortTextBox.Text) && int.TryParse(ServerPortTextBox.Text, out int envPort))
-            {
-                startInfo.EnvironmentVariables["SERVER_PORT"] = envPort.ToString();
-            }
-            
-            if (!string.IsNullOrWhiteSpace(MaxPlayersTextBox.Text) && int.TryParse(MaxPlayersTextBox.Text, out int envMaxPlayers))
-            {
-                startInfo.EnvironmentVariables["MAX_PLAYERS"] = envMaxPlayers.ToString();
-            }
             
             // Performance Environment Variables
             if (HighPriorityCheckBox.IsChecked == true) startInfo.EnvironmentVariables["HIGH_PRIORITY"] = "1";
@@ -968,7 +996,6 @@ namespace CastleStoryLauncher
                         // Map to actual mod names
                         string actualModName = modName switch
                         {
-                            "laddermod" => "LadderMod",
                             "multiplayermod" => "MultiplayerMod",
                             _ => mod.name
                         };
@@ -1029,54 +1056,6 @@ namespace CastleStoryLauncher
             }
         }
         
-        private bool ApplyLadderMod(string gameDir, string backupDir, string logFile)
-        {
-            try
-            {
-                string structureFile = Path.Combine(gameDir, "Info", "Lua", "LUI", "Meta", "Meta_Structure.lua");
-                
-                // Backup original file
-                if (File.Exists(structureFile))
-                {
-                    File.Copy(structureFile, Path.Combine(backupDir, "Meta_Structure.lua"), true);
-                    File.AppendAllText(logFile, $"\nBacked up: {structureFile}");
-                }
-                
-                // Add ladder structures to the existing file
-                if (File.Exists(structureFile))
-                {
-                    string ladderData = @"
--- LadderMod: Adding ladder structures
-_t.Add(AssetKey.New(""Blueprints"", ""WoodenLadder""),			{ Name = ||GetLocalized(""##gamemenu_constructionwheel_woodenladder""),			Icon = ||IconKeys._Ladder_Wood:Get64(),			Hotkey = ""project_WoodenLadder"",		groupId = 4 })
-_t.Add(AssetKey.New(""Blueprints"", ""IronLadder""),				{ Name = ||GetLocalized(""##gamemenu_constructionwheel_ironladder""),				Icon = ||IconKeys._Ladder_Iron:Get64(),			Hotkey = ""project_IronLadder"",		groupId = 4 })
-_t.Add(AssetKey.New(""Blueprints"", ""StoneLadder""),			{ Name = ||GetLocalized(""##gamemenu_constructionwheel_stoneladder""),			Icon = ||IconKeys._Ladder_Stone:Get64(),		Hotkey = ""project_StoneLadder"",		groupId = 4 })
-_t.Add(AssetKey.New(""Blueprints"", ""RopeLadder""),				{ Name = ||GetLocalized(""##gamemenu_constructionwheel_ropeladder""),				Icon = ||IconKeys._Ladder_Rope:Get64(),			Hotkey = ""project_RopeLadder"",		groupId = 4 })
-";
-                    
-                    // Read the current file content
-                    string currentContent = File.ReadAllText(structureFile);
-                    
-                    // Insert ladder data before the final "return _t" line
-                    string updatedContent = currentContent.Replace("return _t", ladderData + "\nreturn _t");
-                    
-                    // Write the updated content back
-                    File.WriteAllText(structureFile, updatedContent);
-                    File.AppendAllText(logFile, $"\nAdded ladder structures to {structureFile}");
-                }
-                else
-                {
-                    File.AppendAllText(logFile, $"\n❌ Structure file not found: {structureFile}");
-                    return false;
-                }
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                File.AppendAllText(logFile, $"\nLadderMod error: {ex.Message}");
-                return false;
-            }
-        }
 
         private Process? FindCastleStoryProcess(string logFile)
         {

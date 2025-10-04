@@ -81,15 +81,27 @@
                     </ListBox>
                     
                     <!-- File Actions -->
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="5">
-                        <Button x:Name="RefreshFilesButton" Content="🔄 Refresh" 
-                               Click="RefreshFiles_Click" Background="#FF6C757D" 
-                               Foreground="White" BorderBrush="#FF6C757D" 
-                               Padding="8,3" Margin="0,0,5,0"/>
-                        <Button x:Name="NewFileButton" Content="➕ New" 
-                               Click="NewFile_Click" Background="#FF28A745" 
-                               Foreground="White" BorderBrush="#FF28A745" 
-                               Padding="8,3"/>
+                    <StackPanel Grid.Row="2" Margin="5">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <Button x:Name="RefreshFilesButton" Content="🔄 Refresh" 
+                                   Click="RefreshFiles_Click" Background="#FF6C757D" 
+                                   Foreground="White" BorderBrush="#FF6C757D" 
+                                   Padding="8,3" Margin="0,0,5,0"/>
+                            <Button x:Name="NewFileButton" Content="➕ New" 
+                                   Click="NewFile_Click" Background="#FF28A745" 
+                                   Foreground="White" BorderBrush="#FF28A745" 
+                                   Padding="8,3"/>
+                        </StackPanel>
+                        
+                        <!-- Gamemode Tools -->
+                        <Button x:Name="PresetButton" Content="⚙️ Presets" 
+                               Click="PresetButton_Click" Background="#FF6F42C1" 
+                               Foreground="White" BorderBrush="#FF6F42C1" 
+                               Padding="8,5" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <Button x:Name="FactionColorEditorButton" Content="🎨 Faction Color Editor" 
+                               Click="FactionColorEditorButton_Click" Background="#FF9C27B0" 
+                               Foreground="White" BorderBrush="#FF9C27B0" 
+                               Padding="8,5" FontWeight="Bold"/>
                     </StackPanel>
                 </Grid>
             </GroupBox>
