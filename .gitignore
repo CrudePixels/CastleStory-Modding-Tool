@@ -357,6 +357,12 @@ logs/*.log
 *.tmp
 *.temp
 
+# Game files (Castle Story installation)
+Game/
+
+# Runtime mod files
+Mods/
+
 # Release packages (but allow versioned releases)
 Release/
 *.7z

@@ -13,6 +13,7 @@ using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Newtonsoft.Json;
+using CastleStoryModdingTool;
 
 namespace CastleStoryLauncher
 {
@@ -473,10 +474,14 @@ namespace CastleStoryLauncher
         private void SelectAllMods_Click(object sender, RoutedEventArgs e)
         {
             foreach (var mod in availableMods) mod.IsEnabled = true;
+            UpdateModCount();
+            UpdateStatus("Mods Updated", $"Selected all {availableMods.Count} mods");
         }
         private void DeselectAllMods_Click(object sender, RoutedEventArgs e)
         {
             foreach (var mod in availableMods) mod.IsEnabled = false;
+            UpdateModCount();
+            UpdateStatus("Mods Updated", "Deselected all mods");
         }
 
 
@@ -796,8 +801,15 @@ namespace CastleStoryLauncher
                 var selectedMods = availableMods.Where(m => m.IsEnabled).ToList();
                 if (selectedMods.Count > 0)
                 {
-                    // Start injection in a separate task so it doesn't block the UI
+                    // Apply mods by modifying game files before launch
                     Task.Run(() => InjectMods(selectedMods));
+                    
+                    // Also apply memory patches after game starts
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(5000); // Wait 5 seconds for Castle Story to fully load
+                        await ApplyMemoryPatchesAfterLaunch();
+                    });
                 }
             }
             else
@@ -858,7 +870,9 @@ namespace CastleStoryLauncher
             return "--gc=sgen -heapsize [4194304] -major=marksweep-conc-par -minor=simple-par -nursery-size=524288"; // Default to 8GB
         }
 
-        private void InjectMods(List<ModInfo> mods)
+        private ModManager? modManager;
+
+        private Task ApplyMemoryPatchesAfterLaunch()
         {
             try
             {
@@ -869,147 +883,198 @@ namespace CastleStoryLauncher
                     Directory.CreateDirectory(logsDir);
                 }
                 
-                // Create a test file to prove this method is being called
-                string logFile = Path.Combine(logsDir, "INJECT_MODS_CALLED.txt");
-                File.WriteAllText(logFile, $"InjectMods called at: {DateTime.Now}\nMods count: {mods.Count}");
-                File.AppendAllText(logFile, $"\nTarget executable: {gameExecutablePath}");
+                string logFile = Path.Combine(logsDir, "MEMORY_PATCH_LOG.txt");
+                File.WriteAllText(logFile, $"Memory patching started at: {DateTime.Now}\n");
                 
-                if (gameProcess == null || gameProcess.HasExited)
+                // Find Castle Story process
+                var castleStoryProcess = FindCastleStoryProcess(logFile);
+                if (castleStoryProcess != null)
                 {
-                    UpdateStatus("Mod Injection Failed", "Game process not available for injection");
-                    return;
-                }
-
-                // Wait for Castle Story to fully load with retry mechanism
-                Process? actualCastleStoryProcess = null;
-                int maxRetries = 20; // Increased retries
-                int retryDelay = 3000; // 3 seconds
-                
-                File.AppendAllText(logFile, $"\nWaiting for Castle Story to start...");
-                
-                for (int i = 0; i < maxRetries; i++)
-                {
-                    System.Threading.Thread.Sleep(retryDelay);
-                    actualCastleStoryProcess = FindCastleStoryProcessByExecutable(logFile);
+                    File.AppendAllText(logFile, $"\nFound Castle Story process: {castleStoryProcess.ProcessName} (PID: {castleStoryProcess.Id})");
                     
-                    if (actualCastleStoryProcess != null)
+                    // Apply memory patches
+                    bool patchSuccess = MemoryPatcher.PatchCastleStoryLimits(castleStoryProcess, logsDir);
+                    
+                    if (patchSuccess)
                     {
-                        File.AppendAllText(logFile, $"\n✅ Found Castle Story process on attempt {i + 1}: {actualCastleStoryProcess.ProcessName} (PID: {actualCastleStoryProcess.Id})");
-                        File.AppendAllText(logFile, $"\nProcess executable: {actualCastleStoryProcess.MainModule?.FileName}");
-                        break;
+                        File.AppendAllText(logFile, $"\n✅ Memory patching successful!");
+                        Dispatcher.Invoke(() => UpdateStatus("Memory Patched", "Multiplayer mod applied successfully"));
                     }
-                    
-                    File.AppendAllText(logFile, $"\nAttempt {i + 1}: Castle Story not ready yet, waiting... (checked {i + 1}/{maxRetries})");
-                }
-                
-                if (actualCastleStoryProcess == null)
-                {
-                    Dispatcher.Invoke(() => UpdateStatus("Mod Injection Failed", "Could not find Castle Story process after multiple attempts"));
-                    File.AppendAllText(logFile, $"\n❌ FAILED: No Castle Story process found after {maxRetries} attempts");
-                    return;
-                }
-                
-                // Double-check we're not targeting the launcher itself
-                if (actualCastleStoryProcess.ProcessName.Contains("Launcher") || 
-                    actualCastleStoryProcess.MainModule?.FileName.Contains("Launcher") == true)
-                {
-                    Dispatcher.Invoke(() => UpdateStatus("Mod Injection Failed", "Cannot inject into launcher process - Castle Story not found"));
-                    File.AppendAllText(logFile, $"\n❌ FAILED: Attempted to inject into launcher process: {actualCastleStoryProcess.ProcessName}");
-                    return;
-                }
-
-                // Try direct memory patching approach (much simpler and more reliable)
-                File.AppendAllText(logFile, $"\nAttempting direct memory patching...");
-                bool patchSuccess = MemoryPatcher.PatchCastleStoryLimits(actualCastleStoryProcess, logsDir);
-                
-                if (patchSuccess)
-                {
-                    File.AppendAllText(logFile, $"\n✅ Memory patching successful!");
-                    Dispatcher.Invoke(() => UpdateStatus("Mods Injected", $"Memory patching successful for {mods.Count} mods"));
-                    return;
+                    else
+                    {
+                        File.AppendAllText(logFile, $"\n❌ Memory patching failed!");
+                        Dispatcher.Invoke(() => UpdateStatus("Memory Patch Failed", "Failed to apply multiplayer mod"));
+                    }
                 }
                 else
                 {
-                    File.AppendAllText(logFile, $"\n❌ Memory patching failed!");
+                    File.AppendAllText(logFile, $"\n❌ Castle Story process not found for memory patching");
+                    Dispatcher.Invoke(() => UpdateStatus("Memory Patch Failed", "Castle Story process not found"));
                 }
+            }
+            catch (Exception ex)
+            {
+                string logsDir = Path.Combine(@"D:\MyProjects\CASTLE STORY\CastleStoryModdingTool", "logs");
+                string logFile = Path.Combine(logsDir, "MEMORY_PATCH_LOG.txt");
+                File.AppendAllText(logFile, $"\nError during memory patching: {ex.Message}");
+                Dispatcher.Invoke(() => UpdateStatus("Memory Patch Error", $"Error: {ex.Message}"));
+            }
+            
+            return Task.CompletedTask;
+        }
 
-                // Fallback to assembly loading in launcher process
+        private void InjectMods(List<ModInfo> mods)
+        {
+            try
+            {
+                // Initialize mod manager if not already done
+                modManager ??= new ModManager();
+                
+                // Create logs directory if it doesn't exist
+                string logsDir = Path.Combine(@"D:\MyProjects\CASTLE STORY\CastleStoryModdingTool", "logs");
+                if (!Directory.Exists(logsDir))
+                {
+                    Directory.CreateDirectory(logsDir);
+                }
+                
+                string logFile = Path.Combine(logsDir, "APPLY_MODS_CALLED.txt");
+                File.WriteAllText(logFile, $"ApplyMods called at: {DateTime.Now}\nMods count: {mods.Count}");
+                File.AppendAllText(logFile, $"\nTarget executable: {gameExecutablePath}");
+                
+                // Get the game directory from the executable path
+                string gameDir = Path.GetDirectoryName(gameExecutablePath) ?? "";
+                File.AppendAllText(logFile, $"\nGame directory: {gameDir}");
+                
+                if (string.IsNullOrEmpty(gameDir) || !Directory.Exists(gameDir))
+                {
+                    Dispatcher.Invoke(() => UpdateStatus("Mod Application Failed", "Game directory not found"));
+                    File.AppendAllText(logFile, $"\n❌ FAILED: Game directory not found: {gameDir}");
+                    return;
+                }
+                
+                int successCount = 0;
+                int memoryPatchCount = 0;
+                
+                // Apply each mod using the new mod system
                 foreach (var mod in mods)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Injecting mod: {mod.name}");
                     File.AppendAllText(logFile, $"\nProcessing mod: {mod.name}");
                     
-                    // Try to load and execute the mod DLL
                     try
                     {
-                        // Try different DLL naming patterns
-                        string[] possibleDllNames = {
-                            $"{mod.name}.dll",
-                            "MultiplayerMod.dll",
-                            "Mod.dll"
+                        // Normalize mod name
+                        string modName = mod.name.ToLower().Replace(" ", "");
+                        
+                        // Map to actual mod names
+                        string actualModName = modName switch
+                        {
+                            "laddermod" => "LadderMod",
+                            "multiplayermod" => "MultiplayerMod",
+                            _ => mod.name
                         };
                         
-                        string modDllPath = null;
-                        foreach (string dllName in possibleDllNames)
-                        {
-                            string testPath = Path.Combine(ModDirectoryTextBox.Text, mod.name, dllName);
-                            File.AppendAllText(logFile, $"\nChecking: {testPath}");
-                            if (File.Exists(testPath))
-                            {
-                                modDllPath = testPath;
-                                break;
-                            }
-                        }
+                        File.AppendAllText(logFile, $"\n[DEBUG] Original name: '{mod.name}'");
+                        File.AppendAllText(logFile, $"\n[DEBUG] Normalized name: '{modName}'");
+                        File.AppendAllText(logFile, $"\n[DEBUG] Actual mod name: '{actualModName}'");
                         
-                        if (!string.IsNullOrEmpty(modDllPath) && File.Exists(modDllPath))
+                        var result = modManager.ApplyMod(actualModName, gameDir, logFile);
+                        
+                        if (result.Success)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Loading mod DLL: {modDllPath}");
-                            File.AppendAllText(logFile, $"\nFound DLL: {modDllPath}");
-                            // Load the mod assembly
-                            var modAssembly = System.Reflection.Assembly.LoadFrom(modDllPath);
-                            File.AppendAllText(logFile, $"\nAssembly loaded successfully");
+                            successCount++;
+                            File.AppendAllText(logFile, $"\n✅ Successfully applied: {mod.name} ({result.IntegrationType})");
                             
-                            // Look for the main mod class
-                            var modTypes = modAssembly.GetTypes();
-                            foreach (var type in modTypes)
+                            if (result.IntegrationType == ModIntegrationType.MemoryPatching)
                             {
-                                if (type.Name.Contains("Mod") || type.Name.Contains("Test"))
-                                {
-                                    // Try to call Initialize method
-                                    var initMethod = type.GetMethod("Initialize", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                                    if (initMethod != null)
-                                    {
-                                        initMethod.Invoke(null, null);
-                                        System.Diagnostics.Debug.WriteLine($"Successfully initialized mod: {mod.name}");
-                                    }
-                                    
-                                    // Try to call OnGameStart method
-                                    var startMethod = type.GetMethod("OnGameStart", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                                    if (startMethod != null)
-                                    {
-                                        startMethod.Invoke(null, null);
-                                        System.Diagnostics.Debug.WriteLine($"Successfully started mod: {mod.name}");
-                                    }
-                                }
+                                memoryPatchCount++;
                             }
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"Mod DLL not found for mod: {mod.name}");
-                            File.AppendAllText(logFile, $"\nDLL NOT FOUND for mod: {mod.name}");
+                            File.AppendAllText(logFile, $"\n❌ Failed to apply: {mod.name} - {result.Message}");
                         }
                     }
                     catch (Exception modEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error injecting mod {mod.name}: {modEx.Message}");
+                        File.AppendAllText(logFile, $"\n❌ Error applying mod {mod.name}: {modEx.Message}");
                     }
                 }
                 
-                Dispatcher.Invoke(() => UpdateStatus("Mods Injected", $"Injected {mods.Count} mods into game"));
+                string statusMessage = successCount > 0 ? 
+                    $"Successfully applied {successCount}/{mods.Count} mods" + 
+                    (memoryPatchCount > 0 ? $" ({memoryPatchCount} memory patches scheduled)" : "") : 
+                    "No mods were applied successfully";
+                Dispatcher.Invoke(() => UpdateStatus("Mods Applied", statusMessage));
+                File.AppendAllText(logFile, $"\nFinal result: {statusMessage}");
             }
             catch (Exception ex)
             {
-                Dispatcher.Invoke(() => UpdateStatus("Mod Injection Failed", $"Failed to inject mods: {ex.Message}"));
+                Dispatcher.Invoke(() => UpdateStatus("Mod Application Failed", $"Failed to apply mods: {ex.Message}"));
+            }
+        }
+        
+        private bool ApplyMultiplayerMod(string gameDir, string backupDir, string logFile)
+        {
+            try
+            {
+                // This is handled by memory patching during game launch
+                // For now, just return true as the memory patching happens elsewhere
+                File.AppendAllText(logFile, $"\nMultiplayerMod: Will be applied via memory patching during launch");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logFile, $"\nMultiplayerMod error: {ex.Message}");
+                return false;
+            }
+        }
+        
+        private bool ApplyLadderMod(string gameDir, string backupDir, string logFile)
+        {
+            try
+            {
+                string structureFile = Path.Combine(gameDir, "Info", "Lua", "LUI", "Meta", "Meta_Structure.lua");
+                
+                // Backup original file
+                if (File.Exists(structureFile))
+                {
+                    File.Copy(structureFile, Path.Combine(backupDir, "Meta_Structure.lua"), true);
+                    File.AppendAllText(logFile, $"\nBacked up: {structureFile}");
+                }
+                
+                // Add ladder structures to the existing file
+                if (File.Exists(structureFile))
+                {
+                    string ladderData = @"
+-- LadderMod: Adding ladder structures
+_t.Add(AssetKey.New(""Blueprints"", ""WoodenLadder""),			{ Name = ||GetLocalized(""##gamemenu_constructionwheel_woodenladder""),			Icon = ||IconKeys._Ladder_Wood:Get64(),			Hotkey = ""project_WoodenLadder"",		groupId = 4 })
+_t.Add(AssetKey.New(""Blueprints"", ""IronLadder""),				{ Name = ||GetLocalized(""##gamemenu_constructionwheel_ironladder""),				Icon = ||IconKeys._Ladder_Iron:Get64(),			Hotkey = ""project_IronLadder"",		groupId = 4 })
+_t.Add(AssetKey.New(""Blueprints"", ""StoneLadder""),			{ Name = ||GetLocalized(""##gamemenu_constructionwheel_stoneladder""),			Icon = ||IconKeys._Ladder_Stone:Get64(),		Hotkey = ""project_StoneLadder"",		groupId = 4 })
+_t.Add(AssetKey.New(""Blueprints"", ""RopeLadder""),				{ Name = ||GetLocalized(""##gamemenu_constructionwheel_ropeladder""),				Icon = ||IconKeys._Ladder_Rope:Get64(),			Hotkey = ""project_RopeLadder"",		groupId = 4 })
+";
+                    
+                    // Read the current file content
+                    string currentContent = File.ReadAllText(structureFile);
+                    
+                    // Insert ladder data before the final "return _t" line
+                    string updatedContent = currentContent.Replace("return _t", ladderData + "\nreturn _t");
+                    
+                    // Write the updated content back
+                    File.WriteAllText(structureFile, updatedContent);
+                    File.AppendAllText(logFile, $"\nAdded ladder structures to {structureFile}");
+                }
+                else
+                {
+                    File.AppendAllText(logFile, $"\n❌ Structure file not found: {structureFile}");
+                    return false;
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(logFile, $"\nLadderMod error: {ex.Message}");
+                return false;
             }
         }
 
@@ -1112,7 +1177,7 @@ namespace CastleStoryLauncher
                             return process;
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         // Ignore processes we can't access
                         continue;
@@ -1797,14 +1862,45 @@ namespace CastleStoryLauncher
 
         private void ApplySelectedMods_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Apply Selected Mods functionality will be implemented soon!", 
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Get selected mods from the list
+                var selectedMods = new List<string>();
+                
+                // For now, just show a message - full implementation will come later
+                MessageBox.Show($"Apply Selected Mods functionality will be implemented soon!\n\nThis will apply all selected mods to the game.", 
+                    "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error applying mods: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void UnapplyAllMods_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Unapply All Mods functionality will be implemented soon!", 
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var result = MessageBox.Show(
+                    "Are you sure you want to unapply ALL mods? This will disable all mods and restore the original game files.",
+                    "Confirm Unapply All Mods",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    // For now, just show a message - full implementation will come later
+                    MessageBox.Show("Unapply All Mods functionality will be implemented soon!\n\nThis will remove all applied mods from the game.", 
+                        "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error unapplying mods: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
     }
 }

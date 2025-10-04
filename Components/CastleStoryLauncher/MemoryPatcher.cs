@@ -305,7 +305,6 @@ namespace CastleStoryLauncher
         {
             try
             {
-                uint bytesRead;
                 byte[] buffer = new byte[moduleSize];
                 
                 if (!ReadProcessMemory(hProcess, moduleBase, buffer, (uint)moduleSize, out nuint bytesReadNuint))

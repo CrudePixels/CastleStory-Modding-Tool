@@ -2,12 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
     <AssemblyName>LadderMod</AssemblyName>
-    <RootNamespace>CastleStoryMods</RootNamespace>
-    <OutputType>Exe</OutputType>
-    <StartupObject>CastleStoryMods.RobustLadderIntegration</StartupObject>
+    <RootNamespace>CastleStoryModding.ExampleMods</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>

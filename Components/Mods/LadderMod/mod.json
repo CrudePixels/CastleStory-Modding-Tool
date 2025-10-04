@@ -1,92 +1,24 @@
 {
-  "name": "LadderMod",
+  "name": "Ladder Mod",
   "version": "1.0.0",
-  "author": "CrudePixel",
-  "description": "Restores ladder climbing mechanics and adds ladder placement tools to Castle Story",
+  "description": "Adds climbable ladders to Castle Story with 4 different types: Wooden, Iron, Stone, and Rope ladders.",
+  "author": "CrudePixels",
+  "dependencies": [],
   "settings": {
-    "keyValues": [
-      {
-        "key": "ladderEnabled",
-        "value": "true",
-        "description": "Enable ladder system (default: true)"
-      },
-      {
-        "key": "maxLadderHeight",
-        "value": "50",
-        "description": "Maximum ladder height in blocks (default: 50)"
-      },
-      {
-        "key": "climbSpeed",
-        "value": "2.0",
-        "description": "Ladder climbing speed multiplier (default: 2.0)"
-      },
-      {
-        "key": "autoSnap",
-        "value": "true",
-        "description": "Auto-snap to ladders when near (default: true)"
-      },
-      {
-        "key": "grabDistance",
-        "value": "2.0",
-        "description": "Distance to grab ladders (default: 2.0)"
-      },
-      {
-        "key": "releaseDistance",
-        "value": "3.0",
-        "description": "Distance to release ladders (default: 3.0)"
-      },
-      {
-        "key": "snapDistance",
-        "value": "1.5",
-        "description": "Distance to snap to ladders (default: 1.5)"
-      },
-      {
-        "key": "climbHeight",
-        "value": "1.0",
-        "description": "Height per climb step (default: 1.0)"
-      },
-      {
-        "key": "fallDamage",
-        "value": "false",
-        "description": "Take fall damage when falling from ladders (default: false)"
-      },
-      {
-        "key": "minLevel",
-        "value": "1",
-        "description": "Minimum level required to use ladders (default: 1)"
-      },
-      {
-        "key": "requiresBlueprint",
-        "value": "false",
-        "description": "Require blueprint to build ladders (default: false)"
-      },
-      {
-        "key": "maxPerPlayer",
-        "value": "10",
-        "description": "Maximum ladders per player (default: 10)"
-      },
-      {
-        "key": "cooldown",
-        "value": "0.5",
-        "description": "Cooldown between ladder uses in seconds (default: 0.5)"
-      }
-    ]
+    "enabled": true,
+    "maxHeight": 100,
+    "climbSpeed": 2.0,
+    "durability": 200
   },
   "features": [
-    "Restore ladder climbing mechanics",
-    "Add ladder placement tools",
-    "Configurable ladder physics",
-    "Auto-snap to ladders",
-    "Multiple ladder types (Wood, Iron, Stone, Rope)",
-    "Building requirements and limits",
-    "Fall damage protection",
-    "Player level requirements"
+    "Wooden Ladder - 2 wood cost",
+    "Iron Ladder - 1 iron + 1 wood cost", 
+    "Stone Ladder - 2 stone cost",
+    "Rope Ladder - 3 rope + 1 wood cost",
+    "Auto-injection into game files",
+    "Backup creation before modification",
+    "DLL injection into Castle Story process"
   ],
-  "dependencies": [
-    "CastleStoryModdingTool.Core"
-  ],
-  "compatibility": {
-    "minVersion": "1.0.0",
-    "maxVersion": "2.0.0"
-  }
+  "category": "Building",
+  "tags": ["ladders", "climbing", "building", "structures"]
 }
