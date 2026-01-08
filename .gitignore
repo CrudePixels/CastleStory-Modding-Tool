@@ -360,8 +360,11 @@ logs/*.log
 # Game files (Castle Story installation)
 Game/
 
-# Runtime mod files
-Mods/
+# Runtime mod files (but allow source mod projects)
+# Mods/
+# Only ignore build outputs in mods
+Components/Mods/*/bin/
+Components/Mods/*/obj/
 
 # Release packages (but allow versioned releases)
 Release/
