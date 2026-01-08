@@ -1,0 +1,28 @@
+{
+  "name": "Jason's Enhancements",
+  "version": "1.0.0",
+  "author": "Jason",
+  "description": "Copies all files from mod folder to Castle Story directory",
+  "sourcePath": "Components\\Mods\\Castle Story",
+  "settings": {
+    "keyValues": [
+      {
+        "key": "sourcePath",
+        "value": "Components\\Mods\\Castle Story",
+        "description": "Source folder containing files to copy to game directory (relative to project root)"
+      },
+      {
+        "key": "backupBeforeCopy",
+        "value": "true",
+        "description": "Backup original files before copying"
+      }
+    ]
+  },
+  "features": [
+    "Copy all files from source folder to game directory",
+    "Recursive directory copying",
+    "Automatic backup of original files",
+    "Simple enable/disable toggle"
+  ],
+  "integrationType": "FileCopy"
+}

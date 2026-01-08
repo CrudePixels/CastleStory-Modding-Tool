@@ -1,0 +1,40 @@
+{
+	"__CODENAME" : "conquest_versus_f283061f-051c-4e70-8dd7-0edcf13bd3be",
+	"__DISPLAYNAME" : "##mode_conquer_preset_versus",
+	"__DESCRIPTION" : "##mode_conquer_preset_versus_info",
+	"__PRESET_GAMEMODE" : "Conquer",
+	"__PRESET_ORDER" : 0,
+	"__ASSETVERSION": 1,
+	"__PRESET_ISDEFAULT" : true,
+	"__PLAYABLECONTEXT" : 2,
+	
+	"MP_MinTeams" : 2,
+	"MP_MaxTeams" : -1,
+	"MP_MinPlayersPerTeam" : 1,
+	"MP_MaxPlayersPerTeam" : -1,
+	"MP_AllowSharingTeam" : true,
+	
+	"MP_MinFactions" : 2,
+	"MP_MaxFactions" : -1,
+	"MP_MinPlayersPerFaction" : 1,
+	"MP_MaxPlayersPerFaction" : -1,
+	"MP_AllowSharingFaction" : true,
+	
+	"startingCorruptCrystals" : 0,
+	"forcePlayerFirefliesToPlayerCrystal" : true,
+	
+	"startingWorkersCount" : 10,
+	"startingKnightCount" : 2,
+	"startingArcherCount" : 4,
+	
+	"timeBeforeCanCapture" : 1.0,
+	
+	"canDigGround" : true,
+	"playerRelations" : 2,
+	
+	"hasRaidMissions" : false,
+	
+	"blueCrystalDeeplayer" : true,
+	"orangeCrystalDeeplayer" : true,
+	"ironDeeplayer" : true,
+}
