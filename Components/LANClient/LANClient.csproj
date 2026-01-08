@@ -10,6 +10,8 @@
       <AssemblyDescription>LAN client for discovering and connecting to Castle Story servers</AssemblyDescription>
       <AssemblyVersion>1.0.0.0</AssemblyVersion>
       <FileVersion>1.0.0.0</FileVersion>
+      <PublishReadyToRun>true</PublishReadyToRun>
+      <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     </PropertyGroup>
 
 </Project>

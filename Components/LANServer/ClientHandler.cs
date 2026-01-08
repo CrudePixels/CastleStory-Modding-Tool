@@ -9,7 +9,7 @@ namespace CastleStoryLANServer
     {
         private TcpClient tcpClient;
         private NetworkStream stream;
-        private LANServer server;
+        private LANServerGUI? server;
         private bool isConnected = true;
 
         public string ClientName { get; private set; } = "Unknown";
@@ -19,8 +19,9 @@ namespace CastleStoryLANServer
         
         public event EventHandler? OnDisconnected;
         public event EventHandler? OnNameChanged;
+        public event EventHandler<string>? OnBroadcastNeeded;
 
-        public ClientHandler(TcpClient client, LANServer server)
+        public ClientHandler(TcpClient client, LANServerGUI? server)
         {
             this.tcpClient = client;
             this.server = server;
@@ -83,9 +84,14 @@ namespace CastleStoryLANServer
                         Status = "In Game";
                         Console.WriteLine($"Client {ClientName} joined game");
                         await SendMessage("GAME_JOINED|OK");
+                        var joinMessage = $"PLAYER_JOINED|{ClientName}";
                         if (server != null)
                         {
-                            await server.BroadcastGameUpdate($"PLAYER_JOINED|{ClientName}");
+                            await server.BroadcastMessage(joinMessage);
+                        }
+                        else
+                        {
+                            OnBroadcastNeeded?.Invoke(this, joinMessage);
                         }
                         break;
 
@@ -93,25 +99,40 @@ namespace CastleStoryLANServer
                         Status = "Ready";
                         Console.WriteLine($"Client {ClientName} left game");
                         await SendMessage("GAME_LEFT|OK");
+                        var leaveMessage = $"PLAYER_LEFT|{ClientName}";
                         if (server != null)
                         {
-                            await server.BroadcastGameUpdate($"PLAYER_LEFT|{ClientName}");
+                            await server.BroadcastMessage(leaveMessage);
+                        }
+                        else
+                        {
+                            OnBroadcastNeeded?.Invoke(this, leaveMessage);
                         }
                         break;
 
                     case "GAME_DATA":
                         // Forward game data to other clients
+                        var gameDataMessage = $"PLAYER_DATA|{ClientName}|{data}";
                         if (server != null)
                         {
-                            await server.BroadcastGameUpdate($"PLAYER_DATA|{ClientName}|{data}");
+                            await server.BroadcastMessage(gameDataMessage);
+                        }
+                        else
+                        {
+                            OnBroadcastNeeded?.Invoke(this, gameDataMessage);
                         }
                         break;
 
                     case "CHAT_MESSAGE":
                         Console.WriteLine($"Chat from {ClientName}: {data}");
+                        var chatMessage = $"CHAT|{ClientName}|{data}";
                         if (server != null)
                         {
-                            await server.BroadcastGameUpdate($"CHAT|{ClientName}|{data}");
+                            await server.BroadcastMessage(chatMessage);
+                        }
+                        else
+                        {
+                            OnBroadcastNeeded?.Invoke(this, chatMessage);
                         }
                         break;
 
@@ -158,7 +179,7 @@ namespace CastleStoryLANServer
                     await SendMessage($"DISCONNECT|{reason}");
                     if (server != null)
                     {
-                        await server.RemoveClient(this);
+                        server.RemoveClient(this);
                     }
                 }
                 catch (Exception ex)

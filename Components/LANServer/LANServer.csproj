@@ -10,6 +10,8 @@
       <AssemblyDescription>LAN multiplayer server for Castle Story, similar to Tunngle/GameRanger</AssemblyDescription>
       <AssemblyVersion>1.0.0.0</AssemblyVersion>
       <FileVersion>1.0.0.0</FileVersion>
+      <PublishReadyToRun>true</PublishReadyToRun>
+      <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     </PropertyGroup>
 
 </Project>

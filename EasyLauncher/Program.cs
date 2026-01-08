@@ -15,7 +15,7 @@ namespace CastleStoryEasyLauncher
         private const string VERSION_URL = "https://api.github.com/repos/{0}/releases/latest";
         private const string DOWNLOAD_URL = "https://github.com/{0}/releases/latest/download/CastleStoryModdingTool.zip";
         
-        private string currentVersion = "1.2.1"; // Enhanced with improved memory patching, better error handling, and LAN server fixes
+        private string currentVersion = "1.6.0"; // Advanced Multiplayer Features - 32 player support, spectator mode, advanced faction colors
         private string latestVersion = "";
         private bool updateAvailable = false;
         private HttpClient httpClient = new HttpClient();
@@ -270,14 +270,22 @@ namespace CastleStoryEasyLauncher
         {
             try
             {
-                // Find the root CastleStoryModdingTool directory by going up from EasyLauncher
+                // Find the root directory - try current directory first (release package), then go up (development)
                 var currentPath = Application.StartupPath;
                 var basePath = currentPath;
                 
-                // Go up directories until we find the CastleStoryModdingTool root
-                while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                // Check if we're in a release package (Components folder exists in current directory)
+                if (Directory.Exists(Path.Combine(currentPath, "Components")))
                 {
-                    basePath = Path.GetDirectoryName(basePath);
+                    basePath = currentPath; // We're in the release package root
+                }
+                else
+                {
+                    // Go up directories until we find the CastleStoryModdingTool root (development structure)
+                    while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                    {
+                        basePath = Path.GetDirectoryName(basePath);
+                    }
                 }
                 
                 if (string.IsNullOrEmpty(basePath))
@@ -286,7 +294,12 @@ namespace CastleStoryEasyLauncher
                     return;
                 }
                 
-                var launcherPath = Path.Combine(basePath, "Components", "CastleStoryLauncher", "bin", "Release", "net9.0-windows", "CastleStoryLauncher.exe");
+                // Try release structure first, then development structure
+                var launcherPath = Path.Combine(basePath, "Components", "CastleStoryLauncher", "CastleStoryLauncher.exe");
+                if (!File.Exists(launcherPath))
+                {
+                    launcherPath = Path.Combine(basePath, "Components", "CastleStoryLauncher", "bin", "Release", "net9.0-windows", "CastleStoryLauncher.exe");
+                }
                 
                 if (File.Exists(launcherPath))
                 {
@@ -312,14 +325,22 @@ namespace CastleStoryEasyLauncher
         {
             try
             {
-                // Find the root CastleStoryModdingTool directory by going up from EasyLauncher
+                // Find the root directory - try current directory first (release package), then go up (development)
                 var currentPath = Application.StartupPath;
                 var basePath = currentPath;
                 
-                // Go up directories until we find the CastleStoryModdingTool root
-                while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                // Check if we're in a release package (Components folder exists in current directory)
+                if (Directory.Exists(Path.Combine(currentPath, "Components")))
                 {
-                    basePath = Path.GetDirectoryName(basePath);
+                    basePath = currentPath; // We're in the release package root
+                }
+                else
+                {
+                    // Go up directories until we find the CastleStoryModdingTool root (development structure)
+                    while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                    {
+                        basePath = Path.GetDirectoryName(basePath);
+                    }
                 }
                 
                 if (string.IsNullOrEmpty(basePath))
@@ -328,7 +349,12 @@ namespace CastleStoryEasyLauncher
                     return;
                 }
                 
-                var serverPath = Path.Combine(basePath, "Components", "LANServer", "bin", "Release", "net9.0-windows", "LANServer.exe");
+                // Try release structure first, then development structure
+                var serverPath = Path.Combine(basePath, "Components", "LANServer", "LANServer.exe");
+                if (!File.Exists(serverPath))
+                {
+                    serverPath = Path.Combine(basePath, "Components", "LANServer", "bin", "Release", "net9.0-windows", "LANServer.exe");
+                }
                 
                 if (File.Exists(serverPath))
                 {
@@ -354,14 +380,22 @@ namespace CastleStoryEasyLauncher
         {
             try
             {
-                // Find the root CastleStoryModdingTool directory by going up from EasyLauncher
+                // Find the root directory - try current directory first (release package), then go up (development)
                 var currentPath = Application.StartupPath;
                 var basePath = currentPath;
                 
-                // Go up directories until we find the CastleStoryModdingTool root
-                while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                // Check if we're in a release package (Components folder exists in current directory)
+                if (Directory.Exists(Path.Combine(currentPath, "Components")))
                 {
-                    basePath = Path.GetDirectoryName(basePath);
+                    basePath = currentPath; // We're in the release package root
+                }
+                else
+                {
+                    // Go up directories until we find the CastleStoryModdingTool root (development structure)
+                    while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                    {
+                        basePath = Path.GetDirectoryName(basePath);
+                    }
                 }
                 
                 if (string.IsNullOrEmpty(basePath))
@@ -370,7 +404,12 @@ namespace CastleStoryEasyLauncher
                     return;
                 }
                 
-                var clientPath = Path.Combine(basePath, "Components", "LANClient", "bin", "Release", "net9.0-windows", "LANClient.exe");
+                // Try release structure first, then development structure
+                var clientPath = Path.Combine(basePath, "Components", "LANClient", "LANClient.exe");
+                if (!File.Exists(clientPath))
+                {
+                    clientPath = Path.Combine(basePath, "Components", "LANClient", "bin", "Release", "net9.0-windows", "LANClient.exe");
+                }
                 
                 if (File.Exists(clientPath))
                 {
@@ -396,14 +435,22 @@ namespace CastleStoryEasyLauncher
         {
             try
             {
-                // Find the root CastleStoryModdingTool directory by going up from EasyLauncher
+                // Find the root directory - try current directory first (release package), then go up (development)
                 var currentPath = Application.StartupPath;
                 var basePath = currentPath;
                 
-                // Go up directories until we find the CastleStoryModdingTool root
-                while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                // Check if we're in a release package (Components folder exists in current directory)
+                if (Directory.Exists(Path.Combine(currentPath, "Components")))
                 {
-                    basePath = Path.GetDirectoryName(basePath);
+                    basePath = currentPath; // We're in the release package root
+                }
+                else
+                {
+                    // Go up directories until we find the CastleStoryModdingTool root (development structure)
+                    while (!string.IsNullOrEmpty(basePath) && !Path.GetFileName(basePath).Equals("CastleStoryModdingTool", StringComparison.OrdinalIgnoreCase))
+                    {
+                        basePath = Path.GetDirectoryName(basePath);
+                    }
                 }
                 
                 if (string.IsNullOrEmpty(basePath))
@@ -413,7 +460,12 @@ namespace CastleStoryEasyLauncher
                 }
                 
                 // Launch the Castle Story Launcher with editor argument
-                var launcherPath = Path.Combine(basePath, "Components", "CastleStoryLauncher", "bin", "Release", "net9.0-windows", "CastleStoryLauncher.exe");
+                // Try release structure first, then development structure
+                var launcherPath = Path.Combine(basePath, "Components", "CastleStoryLauncher", "CastleStoryLauncher.exe");
+                if (!File.Exists(launcherPath))
+                {
+                    launcherPath = Path.Combine(basePath, "Components", "CastleStoryLauncher", "bin", "Release", "net9.0-windows", "CastleStoryLauncher.exe");
+                }
                 
                 System.Diagnostics.Debug.WriteLine($"Looking for launcher at: {launcherPath}");
                 System.Diagnostics.Debug.WriteLine($"File exists: {File.Exists(launcherPath)}");

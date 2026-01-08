@@ -51,22 +51,34 @@ namespace CastleStoryLANClient
 
         private void InitializeComponent()
         {
-            this.Text = "LAN Client";
-            this.Size = new Size(700, 600);
+            this.Text = "Castle Story LAN Client";
+            this.Size = new Size(800, 700);
+            this.MinimumSize = new Size(700, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.BackColor = Color.FromArgb(45, 45, 48);
+            this.BackColor = Color.FromArgb(30, 30, 30);
             this.ForeColor = Color.White;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+
+            // Header panel
+            var headerPanel = new Panel
+            {
+                BackColor = Color.FromArgb(45, 45, 48),
+                Size = new Size(this.Width - 20, 80),
+                Location = new Point(10, 10),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            };
+            this.Controls.Add(headerPanel);
 
             // Client info label
             serverInfoLabel = new Label
             {
-                Text = "Castle Story LAN Client",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Text = "🔗 Castle Story LAN Client",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 ForeColor = Color.LightBlue,
-                Size = new Size(500, 30),
-                Location = new Point(20, 20)
+                Size = new Size(400, 30),
+                Location = new Point(15, 15)
             };
-            this.Controls.Add(serverInfoLabel);
+            headerPanel.Controls.Add(serverInfoLabel);
 
             // Status label
             statusLabel = new Label
@@ -74,10 +86,21 @@ namespace CastleStoryLANClient
                 Text = "Status: Disconnected",
                 Font = new Font("Segoe UI", 10),
                 ForeColor = Color.Orange,
-                Size = new Size(200, 25),
-                Location = new Point(20, 60)
+                Size = new Size(250, 25),
+                Location = new Point(15, 45)
             };
-            this.Controls.Add(statusLabel);
+            headerPanel.Controls.Add(statusLabel);
+
+            // Connection quality indicator
+            var qualityLabel = new Label
+            {
+                Text = "Quality: --",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.Gray,
+                Size = new Size(120, 20),
+                Location = new Point(280, 48)
+            };
+            headerPanel.Controls.Add(qualityLabel);
 
             // Name section
             var nameLabel = new Label
@@ -114,27 +137,60 @@ namespace CastleStoryLANClient
             setNameButton.Click += SetNameButton_Click;
             this.Controls.Add(setNameButton);
 
-            // Servers section
+            // Servers panel
+            var serversPanel = new Panel
+            {
+                BackColor = Color.FromArgb(45, 45, 48),
+                Size = new Size(760, 200),
+                Location = new Point(10, 100),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            };
+            this.Controls.Add(serversPanel);
+
             var serversLabel = new Label
             {
-                Text = "Discovered Servers:",
+                Text = "🌐 Discovered Servers:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.White,
-                Size = new Size(150, 25),
-                Location = new Point(20, 150)
+                Size = new Size(200, 25),
+                Location = new Point(10, 10)
             };
-            this.Controls.Add(serversLabel);
+            serversPanel.Controls.Add(serversLabel);
+
+            var serverCountLabel = new Label
+            {
+                Text = "0 servers",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.LightGray,
+                Size = new Size(100, 20),
+                Location = new Point(220, 12)
+            };
+            serversPanel.Controls.Add(serverCountLabel);
 
             serversListBox = new ListBox
             {
                 Font = new Font("Consolas", 9),
                 BackColor = Color.FromArgb(30, 30, 30),
                 ForeColor = Color.LightGreen,
-                Size = new Size(400, 120),
-                Location = new Point(20, 180)
+                Size = new Size(740, 140),
+                Location = new Point(10, 40),
+                BorderStyle = BorderStyle.FixedSingle
             };
-            serversListBox.SelectedIndexChanged += ServersListBox_SelectedIndexChanged;
-            this.Controls.Add(serversListBox);
+            serversListBox.SelectedIndexChanged += (s, e) => {
+                ServersListBox_SelectedIndexChanged(s, e);
+                serverCountLabel.Text = $"{discoveredServers.Count} server(s)";
+            };
+            serversPanel.Controls.Add(serversListBox);
+
+            // Control panel
+            var controlPanel = new Panel
+            {
+                BackColor = Color.FromArgb(45, 45, 48),
+                Size = new Size(760, 120),
+                Location = new Point(10, 310),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            };
+            this.Controls.Add(controlPanel);
 
             // Server buttons
             discoverButton = new Button
@@ -144,11 +200,12 @@ namespace CastleStoryLANClient
                 BackColor = Color.FromArgb(0, 120, 0),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Size = new Size(140, 35),
-                Location = new Point(20, 310)
+                FlatAppearance = { BorderSize = 0 },
+                Size = new Size(150, 40),
+                Location = new Point(10, 10)
             };
             discoverButton.Click += DiscoverButton_Click;
-            this.Controls.Add(discoverButton);
+            controlPanel.Controls.Add(discoverButton);
 
             connectButton = new Button
             {
@@ -157,12 +214,13 @@ namespace CastleStoryLANClient
                 BackColor = Color.FromArgb(0, 100, 200),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Size = new Size(100, 35),
-                Location = new Point(170, 310),
+                FlatAppearance = { BorderSize = 0 },
+                Size = new Size(120, 40),
+                Location = new Point(170, 10),
                 Enabled = false
             };
             connectButton.Click += ConnectButton_Click;
-            this.Controls.Add(connectButton);
+            controlPanel.Controls.Add(connectButton);
 
             disconnectButton = new Button
             {
@@ -171,12 +229,26 @@ namespace CastleStoryLANClient
                 BackColor = Color.FromArgb(200, 0, 0),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Size = new Size(100, 35),
-                Location = new Point(280, 310),
+                FlatAppearance = { BorderSize = 0 },
+                Size = new Size(120, 40),
+                Location = new Point(300, 10),
                 Enabled = false
             };
             disconnectButton.Click += DisconnectButton_Click;
-            this.Controls.Add(disconnectButton);
+            controlPanel.Controls.Add(disconnectButton);
+
+            // Auto-reconnect checkbox
+            var autoReconnectCheck = new CheckBox
+            {
+                Text = "Auto-reconnect on disconnect",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent,
+                Size = new Size(200, 25),
+                Location = new Point(10, 60),
+                Checked = false
+            };
+            controlPanel.Controls.Add(autoReconnectCheck);
 
             // Message section
             var messageLabel = new Label
@@ -214,29 +286,61 @@ namespace CastleStoryLANClient
             sendButton.Click += SendButton_Click;
             this.Controls.Add(sendButton);
 
-            // Log section
+            // Log panel
+            var logPanel = new Panel
+            {
+                BackColor = Color.FromArgb(45, 45, 48),
+                Size = new Size(this.Width - 20, 200),
+                Location = new Point(10, 440),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+            };
+            this.Controls.Add(logPanel);
+
+            var logHeader = new Panel
+            {
+                BackColor = Color.FromArgb(30, 30, 30),
+                Size = new Size(logPanel.Width, 30),
+                Location = new Point(0, 0)
+            };
+            logPanel.Controls.Add(logHeader);
+
             var logLabel = new Label
             {
-                Text = "Client Log:",
+                Text = "📋 Client Log:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.White,
-                Size = new Size(100, 25),
-                Location = new Point(20, 430)
+                Size = new Size(150, 25),
+                Location = new Point(10, 3)
             };
-            this.Controls.Add(logLabel);
+            logHeader.Controls.Add(logLabel);
+
+            var clearLogButton = new Button
+            {
+                Text = "Clear",
+                Font = new Font("Segoe UI", 8),
+                BackColor = Color.FromArgb(60, 60, 60),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                FlatAppearance = { BorderSize = 0 },
+                Size = new Size(60, 25),
+                Location = new Point(logPanel.Width - 80, 3)
+            };
+            clearLogButton.Click += (s, e) => logTextBox.Clear();
+            logHeader.Controls.Add(clearLogButton);
 
             logTextBox = new TextBox
             {
                 Font = new Font("Consolas", 9),
-                BackColor = Color.FromArgb(30, 30, 30),
+                BackColor = Color.FromArgb(20, 20, 20),
                 ForeColor = Color.LightGray,
-                Size = new Size(650, 120),
-                Location = new Point(20, 460),
+                Size = new Size(logPanel.Width - 20, 160),
+                Location = new Point(10, 40),
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
-                ReadOnly = true
+                ReadOnly = true,
+                BorderStyle = BorderStyle.FixedSingle
             };
-            this.Controls.Add(logTextBox);
+            logPanel.Controls.Add(logTextBox);
 
             // Start auto-discovery
             StartAutoDiscovery();
@@ -444,27 +548,25 @@ namespace CastleStoryLANClient
         {
             if (stream != null)
             {
-                var data = Encoding.UTF8.GetBytes(message);
+                var data = Encoding.UTF8.GetBytes(message + "\n");
                 await stream.WriteAsync(data, 0, data.Length);
+                await stream.FlushAsync();
             }
         }
 
         private async Task HandleServerMessages()
         {
-            var buffer = new byte[1024];
+            var buffer = new byte[4096];
             
             while (isConnected && tcpClient?.Connected == true)
             {
                 try
                 {
                     var bytesRead = await stream!.ReadAsync(buffer, 0, buffer.Length);
-                    if (bytesRead > 0)
-                    {
-                        var message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        this.Invoke(new Action(() => {
-                            LogMessage($"Server: {message}");
-                        }));
-                    }
+                    if (bytesRead == 0) break;
+                    
+                    var message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    ProcessServerMessage(message.Trim());
                 }
                 catch (Exception ex)
                 {
@@ -474,8 +576,67 @@ namespace CastleStoryLANClient
                             LogMessage($"Server message error: {ex.Message}");
                         }));
                     }
+                    break;
                 }
             }
+        }
+
+        private void ProcessServerMessage(string message)
+        {
+            var parts = message.Split('|');
+            if (parts.Length < 1) return;
+
+            string command = parts[0];
+            string data = parts.Length > 1 ? parts[1] : "";
+
+            this.Invoke(new Action(() => {
+                switch (command)
+                {
+                    case "NAME_SET":
+                        LogMessage("Name set successfully");
+                        break;
+                    case "GAME_JOINED":
+                        LogMessage("Joined game successfully");
+                        break;
+                    case "GAME_LEFT":
+                        LogMessage("Left game successfully");
+                        break;
+                    case "BROADCAST":
+                        LogMessage($"Server: {data}");
+                        break;
+                    case "GAME_UPDATE":
+                        if (parts.Length >= 3)
+                        {
+                            string updateType = parts[1];
+                            string updateData = parts[2];
+                            LogMessage($"Game Update [{updateType}]: {updateData}");
+                        }
+                        break;
+                    case "CHAT":
+                        if (parts.Length >= 3)
+                        {
+                            string player = parts[1];
+                            string chatMessage = parts[2];
+                            LogMessage($"[{player}]: {chatMessage}");
+                        }
+                        break;
+                    case "PONG":
+                        LogMessage($"Pong received: {data}");
+                        break;
+                    case "HEARTBEAT":
+                    case "HEARTBEAT_ACK":
+                        // Silently handle heartbeat
+                        break;
+                    case "DISCONNECT":
+                        LogMessage($"Disconnected: {data}");
+                        isConnected = false;
+                        UpdateUI();
+                        break;
+                    default:
+                        LogMessage($"Server: {message}");
+                        break;
+                }
+            }));
         }
 
         private void UpdateServersList()
@@ -483,7 +644,9 @@ namespace CastleStoryLANClient
             serversListBox.Items.Clear();
             foreach (var server in discoveredServers)
             {
-                serversListBox.Items.Add($"{server.Name} - {server.PlayerCount} players - v{server.Version}");
+                var ping = "---";
+                var quality = "---";
+                serversListBox.Items.Add($"{server.Name} | {server.PlayerCount} players | v{server.Version} | {server.EndPoint.Address} | Ping: {ping}ms | {quality}");
             }
         }
 
@@ -491,23 +654,25 @@ namespace CastleStoryLANClient
         {
             if (isConnected)
             {
-                statusLabel.Text = "Status: Connected";
+                statusLabel.Text = "Status: ✅ Connected";
                 statusLabel.ForeColor = Color.LightGreen;
                 connectButton.Enabled = false;
                 disconnectButton.Enabled = true;
                 messageTextBox.Enabled = true;
                 sendButton.Enabled = true;
-                serverInfoLabel.Text = "LAN Client - Connected to server";
+                discoverButton.Enabled = false;
+                serverInfoLabel.Text = "🔗 LAN Client - Connected to server";
             }
             else
             {
-                statusLabel.Text = "Status: Disconnected";
+                statusLabel.Text = "Status: ⚠️ Disconnected";
                 statusLabel.ForeColor = Color.Orange;
                 connectButton.Enabled = discoveredServers.Count > 0 && serversListBox.SelectedIndex >= 0;
                 disconnectButton.Enabled = false;
                 messageTextBox.Enabled = false;
                 sendButton.Enabled = false;
-                serverInfoLabel.Text = "LAN Client - Ready to discover servers";
+                discoverButton.Enabled = true;
+                serverInfoLabel.Text = "🔗 LAN Client - Ready to discover servers";
             }
         }
 

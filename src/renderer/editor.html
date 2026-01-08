@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lua Editor - Castle Story Modding Tool</title>
+    <link rel="stylesheet" href="styles/editor.css">
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Header -->
+        <header class="editor-header">
+            <div class="header-left">
+                <button class="btn btn-secondary" id="back-btn">← Back to Launcher</button>
+                <div class="file-info">
+                    <span class="file-name" id="current-file">No file open</span>
+                    <span class="file-status" id="file-status"></span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="save-btn" disabled>Save</button>
+                <button class="btn btn-secondary" id="save-as-btn">Save As</button>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-section">
+                <button class="btn btn-outline" id="open-btn">📁 Open File</button>
+                <button class="btn btn-outline" id="new-btn">📄 New File</button>
+                <button class="btn btn-outline" id="recent-files-btn" title="Recent Files (Ctrl+Shift+P)">📋 Recent</button>
+                <div class="divider"></div>
+                <button class="btn btn-outline" id="find-btn" title="Find (Ctrl+F)">🔍 Find</button>
+                <button class="btn btn-outline" id="replace-btn" title="Replace (Ctrl+H)">🔄 Replace</button>
+                <div class="divider"></div>
+                <button class="btn btn-outline" id="easy-mode-btn">Easy Mode</button>
+                <button class="btn btn-outline active" id="advanced-mode-btn">Advanced Mode</button>
+            </div>
+            <div class="toolbar-section">
+                <select class="file-type-select" id="file-type-select">
+                    <option value="lua">Lua File</option>
+                    <option value="json">JSON File</option>
+                    <option value="xml">XML File</option>
+                    <option value="csv">CSV File</option>
+                    <option value="txt">Text File</option>
+                </select>
+                <button class="btn btn-outline" id="validate-btn">✓ Validate</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Easy Mode Panel -->
+            <div class="easy-mode-panel" id="easy-mode-panel" style="display: none;">
+                <div class="easy-mode-header">
+                    <h3>Easy Mode - Form-Based Editing</h3>
+                    <p>Edit configuration values using forms instead of code</p>
+                </div>
+                <div class="form-container" id="form-container">
+                    <div class="no-file-message">
+                        <p>Open a file to see the form-based editor</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Mode Panel -->
+            <div class="advanced-mode-panel" id="advanced-mode-panel">
+                <div class="editor-wrapper">
+                    <div class="editor-tabs" id="editor-tabs">
+                        <!-- Tabs will be dynamically added here -->
+                    </div>
+                    <div class="editor-content">
+                        <div id="monaco-editor" class="monaco-editor"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="status-item">Line: <span id="current-line">1</span></span>
+                <span class="status-item">Column: <span id="current-column">1</span></span>
+                <span class="status-item">Language: <span id="current-language">Lua</span></span>
+            </div>
+            <div class="status-right">
+                <span class="status-item" id="file-encoding">UTF-8</span>
+                <span class="status-item" id="file-size">0 bytes</span>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>File Explorer</h3>
+                <div class="sidebar-controls">
+                    <button class="btn btn-sm" id="browse-game-btn">📁 Browse</button>
+                    <button class="btn btn-sm" id="refresh-files-btn">🔄</button>
+                </div>
+            </div>
+            <div class="game-directory">
+                <label for="game-path">Castle Story Directory:</label>
+                <div class="path-input-group">
+                    <input type="text" id="game-path" placeholder="Select Castle Story directory..." readonly>
+                    <button class="btn btn-sm" id="set-game-path-btn">Set</button>
+                </div>
+            </div>
+            <div class="breadcrumb-container" id="breadcrumb-container" style="padding: 0.5rem; background: #252526; border-bottom: 1px solid #3e3e42; font-size: 0.85rem;">
+                <!-- Breadcrumbs will be dynamically added here -->
+            </div>
+            <div class="file-tree" id="file-tree">
+                <div class="no-files">No game directory set</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New File Dialog -->
+    <div class="modal-overlay" id="new-file-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Create New File</h3>
+                <button class="modal-close" id="close-new-file-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="template-grid">
+                    <div class="template-item" data-template="config">
+                        <div class="template-icon">🎮</div>
+                        <h4>Game Mode Config</h4>
+                        <p>Create a new gamemode configuration file</p>
+                    </div>
+                    <div class="template-item" data-template="bricktron">
+                        <div class="template-icon">🤖</div>
+                        <h4>Bricktron Names</h4>
+                        <p>Create a new bricktron names file</p>
+                    </div>
+                    <div class="template-item" data-template="language">
+                        <div class="template-icon">🌍</div>
+                        <h4>Language File</h4>
+                        <p>Create a new language/translation file</p>
+                    </div>
+                    <div class="template-item" data-template="faction">
+                        <div class="template-icon">🎨</div>
+                        <h4>Faction Colors</h4>
+                        <p>Create a new faction colors file</p>
+                    </div>
+                    <div class="template-item" data-template="custom">
+                        <div class="template-icon">📝</div>
+                        <h4>Custom Lua</h4>
+                        <p>Create a blank Lua file</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <script src="scripts/editor.js"></script>
+</body>
+</html>

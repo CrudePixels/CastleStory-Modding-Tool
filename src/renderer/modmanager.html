@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mod Manager - Castle Story Modding Tool</title>
+    <link rel="stylesheet" href="styles/modmanager.css">
+</head>
+<body>
+    <div class="modmanager-container">
+        <!-- Header -->
+        <header class="modmanager-header">
+            <div class="header-left">
+                <button class="btn btn-secondary" id="back-btn">← Back to Launcher</button>
+                <h1>Mod Manager</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="launch-game-btn">🚀 Launch Castle Story</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Game Settings -->
+            <div class="settings-section">
+                <h2>Game Settings</h2>
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <label for="game-path">Castle Story Path:</label>
+                        <div class="path-input-group">
+                            <input type="text" id="game-path" placeholder="Auto-detected or browse..." readonly>
+                            <button class="btn btn-outline" id="browse-game-btn">Browse</button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="steam-path">Steam Path:</label>
+                        <div class="path-input-group">
+                            <input type="text" id="steam-path" placeholder="Auto-detected or browse..." readonly>
+                            <button class="btn btn-outline" id="browse-steam-btn">Browse</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mod Management -->
+            <div class="mods-section">
+                <div class="section-header">
+                    <h2>Active Mods</h2>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <input type="text" id="mod-search" placeholder="🔍 Search mods..." class="search-input">
+                        </div>
+                        <button class="btn btn-outline" id="refresh-mods-btn" title="Refresh mod list">🔄 Refresh</button>
+                        <button class="btn btn-outline" id="add-mod-btn">+ Add Mod</button>
+                    </div>
+                </div>
+                
+                <div class="mods-filter">
+                    <label class="filter-label">Filter:</label>
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="enabled">Enabled</button>
+                    <button class="filter-btn" data-filter="disabled">Disabled</button>
+                    <button class="filter-btn" data-filter="conflicts">Conflicts</button>
+                </div>
+                
+                <div class="mods-list" id="mods-list">
+                    <div class="no-mods">
+                        <div class="no-mods-icon">📦</div>
+                        <p>No mods installed</p>
+                        <p class="no-mods-hint">Click "Add Mod" to install your first mod</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Launch Options -->
+            <div class="launch-section">
+                <h2>Launch Options</h2>
+                <div class="launch-options">
+                    <div class="option-group">
+                        <label class="checkbox-label" title="Enable or disable all mods">
+                            <input type="checkbox" id="enable-mods" checked>
+                            <span class="checkmark"></span>
+                            Enable Mods
+                        </label>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label class="checkbox-label" title="Apply memory patches to game limits">
+                            <input type="checkbox" id="enable-memory-patches" checked>
+                            <span class="checkmark"></span>
+                            Enable Memory Patches
+                        </label>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label class="checkbox-label" title="Automatically start LAN server when launching">
+                            <input type="checkbox" id="enable-lan-server">
+                            <span class="checkmark"></span>
+                            Start LAN Server
+                        </label>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label class="checkbox-label" title="Enable debug logging and console">
+                            <input type="checkbox" id="enable-debug-mode">
+                            <span class="checkmark"></span>
+                            Debug Mode
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="status-section">
+                <h2>Status & Information</h2>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-label">Game Status:</span>
+                        <span class="status-value" id="game-status">Ready</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Mods Loaded:</span>
+                        <span class="status-value" id="mods-count">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Memory Patches:</span>
+                        <span class="status-value" id="patches-status">Active</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Conflicts:</span>
+                        <span class="status-value" id="conflicts-count">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mod Conflicts -->
+            <div class="conflicts-section" id="conflicts-section" style="display: none;">
+                <h2>⚠️ Mod Conflicts Detected</h2>
+                <div class="conflicts-list" id="conflicts-list">
+                    <!-- Conflicts will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Mod Dialog -->
+    <div class="modal-overlay" id="add-mod-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Mod</h3>
+                <button class="modal-close" id="close-add-mod-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="add-mod-options">
+                    <button class="add-mod-option" id="browse-mod-file-btn">
+                        <div class="option-icon">📁</div>
+                        <h4>Browse Mod File</h4>
+                        <p>Select a .dll mod file from your computer</p>
+                    </button>
+                    <button class="add-mod-option" id="browse-mod-folder-btn">
+                        <div class="option-icon">📂</div>
+                        <h4>Browse Mod Folder</h4>
+                        <p>Select a folder containing mod files</p>
+                    </button>
+                    <button class="add-mod-option" id="create-mod-btn">
+                        <div class="option-icon">➕</div>
+                        <h4>Create New Mod</h4>
+                        <p>Create a new mod from template</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Launching Castle Story...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/modmanager.js"></script>
+</body>
+</html>

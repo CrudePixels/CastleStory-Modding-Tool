@@ -40,7 +40,7 @@ set /p choice="Enter your choice (1-2): "
 if "%choice%"=="1" (
     echo.
     echo Building all components...
-    call build-all.bat
+    call scripts\build\build-all.bat
 ) else (
     echo.
     echo Exiting...

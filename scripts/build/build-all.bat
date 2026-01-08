@@ -85,7 +85,7 @@ echo - EasyLauncher.exe (recommended - with auto-update)
 echo - CastleStoryLauncher.exe (main launcher)
 echo - LAN Server and Client (LAN multiplayer)
 echo.
-echo To create a release package, run: CreateRelease.bat
+echo To create a release package, run: scripts\build\create-release.bat
 echo.
 echo Press any key to launch the Easy Launcher...
 pause >nul

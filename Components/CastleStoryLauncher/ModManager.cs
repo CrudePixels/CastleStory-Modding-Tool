@@ -24,6 +24,7 @@ namespace CastleStoryModdingTool
         {
             // Register available mods
             availableMods["MultiplayerMod"] = MultiplayerModDefinition.CreateIntegration();
+            availableMods["Jason's Enhancements"] = JasonsEnhancementsDefinition.CreateIntegration();
         }
 
         public List<string> GetAvailableMods()

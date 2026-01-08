@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castle Story Modding Tool</title>
+    <link rel="stylesheet" href="styles/launcher.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="castle-icon">🏰</div>
+                    <h1 class="app-title">Castle Story Modding Tool</h1>
+                </div>
+                <div class="version-info">
+                    <span class="version">Version: <span id="version">1.6.0</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="welcome-section">
+                <h2>Welcome to Castle Story Modding Tool</h2>
+                <p>A comprehensive modding and multiplayer enhancement tool for Castle Story</p>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="action-grid">
+                    <button class="action-card" id="editor-btn">
+                        <div class="action-icon">📝</div>
+                        <h3>Lua Editor</h3>
+                        <p>Edit game configuration files with syntax highlighting and smart validation</p>
+                    </button>
+
+                    <button class="action-card" id="launch-game-btn">
+                        <div class="action-icon">🎮</div>
+                        <h3>Launch Game</h3>
+                        <p>Launch Castle Story with custom mods and settings</p>
+                    </button>
+
+                    <button class="action-card" id="lan-server-btn">
+                        <div class="action-icon">🌐</div>
+                        <h3>LAN Server</h3>
+                        <p>Host local multiplayer games without Steam</p>
+                    </button>
+
+                    <button class="action-card" id="lan-client-btn">
+                        <div class="action-icon">🔗</div>
+                        <h3>LAN Client</h3>
+                        <p>Connect to local servers with auto-discovery</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Section -->
+            <div class="status-section">
+                <div class="status-card">
+                    <h3>System Status</h3>
+                    <div class="status-items">
+                        <div class="status-item">
+                            <span class="status-label">Castle Story:</span>
+                            <span class="status-value" id="game-status">Not Detected</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Steam:</span>
+                            <span class="status-value" id="steam-status">Not Detected</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">LAN Server:</span>
+                            <span class="status-value" id="server-status">Stopped</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Files -->
+            <div class="recent-files">
+                <h3>Recent Files</h3>
+                <div class="file-list" id="recent-files-list">
+                    <div class="no-files">No recent files</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p>This launcher will automatically check for updates and keep your modding tool up-to-date.</p>
+                <div class="footer-links">
+                    <a href="#" id="github-link">GitHub</a>
+                    <a href="#" id="help-link">Help</a>
+                    <a href="#" id="about-link">About</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/launcher.js"></script>
+</body>
+</html>
